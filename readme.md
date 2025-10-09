@@ -24,24 +24,53 @@
     ```
 
 2. **Build and start containers**
+    
+    **Linux/macOS:**
     ```bash
     docker-compose up -d --build
     ```
+    
+    **macOS (Docker Desktop):**
+    ```bash
+    docker compose up -d --build
+    ```
 
 3. **Install dependencies**
+    
+    **Linux/macOS:**
     ```bash
     docker-compose exec laravel12-app composer install
     ```
+    
+    **macOS (Docker Desktop):**
+    ```bash
+    docker compose exec laravel12-app composer install
+    ```
 
 4. **Set up environment**
+    
+    **Linux/macOS:**
     ```bash
     docker-compose exec laravel12-app cp .env.example .env
     docker-compose exec laravel12-app php artisan key:generate
     ```
+    
+    **macOS (Docker Desktop):**
+    ```bash
+    docker compose exec laravel12-app cp .env.example .env
+    docker compose exec laravel12-app php artisan key:generate
+    ```
 
 5. **Run migrations**
+    
+    **Linux/macOS:**
     ```bash
     docker-compose exec laravel12-app php artisan migrate
+    ```
+    
+    **macOS (Docker Desktop):**
+    ```bash
+    docker compose exec laravel12-app php artisan migrate
     ```
 
 6. **Access the application**
@@ -50,6 +79,8 @@
     - Redis: localhost:6379
 
 ### Useful commands
+
+**Linux/macOS:**
 ```bash
 # Stop containers
 docker-compose down
@@ -60,3 +91,17 @@ docker-compose logs -f
 # Access container shell
 docker-compose exec laravel12-app bash
 ```
+
+**macOS (Docker Desktop):**
+```bash
+# Stop containers
+docker compose down
+
+# View logs
+docker compose logs -f
+
+# Access container shell
+docker compose exec laravel12-app bash
+```
+
+> **Note:** Newer Docker Desktop versions use `docker compose` (space) instead of `docker-compose` (hyphen). Use the appropriate command based on your Docker installation.
