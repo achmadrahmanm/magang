@@ -11,23 +11,50 @@
             box-sizing: border-box;
         }
 
+        html {
+            height: 100% !important;
+            overflow-x: hidden !important;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            min-height: 100vh !important;
+            height: 100vh !important;
+            /* display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            overflow: auto !important; */
+        }
+
+        .login-wrapper {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 100% !important;
+            position: relative !important;
+            z-index: 9999 !important;
         }
 
         .login-container {
-            background: white;
-            padding: 3rem 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            position: relative;
+            background: white !important;
+            padding: 3rem 2.5rem !important;
+            border-radius: 16px !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+            width: 100% !important;
+            max-width: 400px !important;
+            position: relative !important;
+            margin: auto !important;
+            transform: translateZ(0) !important;
+            z-index: 10000 !important;
         }
 
         .login-header {
@@ -173,14 +200,27 @@
 
         @media (max-width: 480px) {
             .login-container {
-                margin: 1rem;
-                padding: 2rem 1.5rem;
+                margin: 1rem !important;
+                padding: 2rem 1.5rem !important;
             }
         }
+
+        /* Prevent extension interference */
+        /* body:not([style*="sw-si-extension"]) {
+            position: fixed !important;
+        } */
+
+        /* Override any external extension styles */
+        /* #sw-si-extension-global-style ~ * .login-container,
+        body[data-extension] .login-container {
+            position: relative !important;
+            display: block !important;
+        } */
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-wrapper">
+        <div class="login-container">
         <div class="login-header">
             <h1>Welcome Back</h1>
             <p>Please sign in to your account</p>
@@ -190,14 +230,14 @@
             @csrf
             
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">Email or Username</label>
                 <input 
-                    type="email" 
+                    type="text" 
                     id="email" 
                     name="email" 
                     class="form-control" 
                     value="{{ old('email') }}"
-                    placeholder="Enter your email"
+                    placeholder="Enter your email or username"
                     required
                     autofocus
                 >
@@ -238,6 +278,7 @@
 
         <div class="form-footer">
             <a href="#">Forgot your password?</a>
+        </div>
         </div>
     </div>
 
