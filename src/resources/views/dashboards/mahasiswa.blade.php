@@ -1,6 +1,6 @@
 @extends('mahasiswa.layout')
 
-@section('title', 'Student Dashboard')
+@section('title', 'Mahasiswa Dashboard')
 @section('page-title', 'Dashboard Overview')
 
 @section('content')

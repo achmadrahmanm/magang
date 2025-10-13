@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Laravel App</title>
+    <title>Login</title>
+    {{-- add favicon and meta og for sharing --}}
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <meta property="og:title" content="Login">
+    <meta property="og:description" content="Login to the application">
+    <meta property="og:image" content="/icons/logo.svg">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   
     <style>
         * {
             margin: 0;
@@ -18,20 +27,13 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; */
+            background: url('/images/background.jpg') !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            background-size: cover !important;
             min-height: 100vh !important;
             height: 100vh !important;
-            /* display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            overflow: auto !important; */
         }
 
         .login-wrapper {
@@ -59,7 +61,7 @@
 
         .login-header {
             text-align: center;
-            margin-bottom: 2rem;
+            /* margin-bottom: 2rem; */
         }
 
         .login-header h1 {
@@ -159,7 +161,7 @@
 
         .login-btn {
             width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #29166f;
             color: white;
             border: none;
             padding: 0.875rem 1rem;
@@ -222,8 +224,9 @@
     <div class="login-wrapper">
         <div class="login-container">
             <div class="login-header">
-                <h1>Welcome Back</h1>
-                <p>Please sign in to your account</p>
+                <img src="/icons/logo.svg" alt="App Logo" style="width:55%; height: auto;">
+                {{-- <h1>Welcome Back</h1>
+                <p>Please sign in to your account</p> --}}
             </div>
 
             <form method="POST" action="{{ route('login') }}">
@@ -272,7 +275,7 @@
                 </div>
 
                 <button type="submit" class="login-btn mb-3">
-                    Sign In
+                    Login
                 </button>
 
                 {{-- <p style="color: #667eea; text-decoration: underline; text-align: center; font-size: 0.9rem; margin-top:5px;"><a href="#" >Forgot your password?</a></p> --}}
