@@ -4,384 +4,385 @@
 @section('page-title', 'Dashboard Overview')
 
 @section('content')
-<style>
-    .welcome-card {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 16px;
-        margin-bottom: 2rem;
-        text-align: center;
-        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
-    }
-
-    .welcome-card h2 {
-        margin-bottom: 0.5rem;
-        font-size: 2rem;
-        font-weight: 700;
-    }
-
-    .welcome-card p {
-        font-size: 1.1rem;
-        opacity: 0.9;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        text-align: center;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid #f0f0f0;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        font-size: 2.5rem;
-        color: #28a745;
-        margin-bottom: 1rem;
-    }
-
-    .stat-card h3 {
-        color: #333;
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
-
-    .stat-number {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #28a745;
-        margin-bottom: 0.5rem;
-        line-height: 1;
-    }
-
-    .stat-description {
-        color: #666;
-        font-size: 0.9rem;
-    }
-
-    .sections-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 2rem;
-    }
-
-    .section-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        border: 1px solid #f0f0f0;
-    }
-
-    .section-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #f8f9fa;
-    }
-
-    .section-icon {
-        font-size: 1.5rem;
-        color: #28a745;
-        margin-right: 0.75rem;
-    }
-
-    .section-title {
-        color: #333;
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin: 0;
-    }
-
-    .item-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .list-item {
-        display: flex;
-        align-items: center;
-        padding: 1.25rem;
-        border: 2px solid #f8f9fa;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        background: #fafafa;
-    }
-
-    .list-item:hover {
-        border-color: #28a745;
-        background: white;
-        transform: translateX(5px);
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.1);
-    }
-
-    .item-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1rem;
-        font-size: 1.3rem;
-    }
-
-    .item-content {
-        flex: 1;
-    }
-
-    .item-title {
-        color: #333;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-        font-size: 1rem;
-    }
-
-    .item-desc {
-        color: #666;
-        font-size: 0.85rem;
-        line-height: 1.4;
-    }
-
-    .status-badge {
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .badge-excellent {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .badge-good {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .badge-warning {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .badge-pending {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .sections-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-        }
-
-        .welcome-card h2 {
-            font-size: 1.5rem;
-        }
-
-        .section-card {
-            padding: 1.5rem;
-        }
-    }
-</style>
-
-<div class="welcome-card">
-    <h2><i class="fas fa-graduation-cap"></i> Welcome Back, Student!</h2>
-    <p>Track your academic progress and manage your studies effectively</p>
-</div>
-
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-        <h3>Current Semester</h3>
-        <div class="stat-number">5</div>
-        <div class="stat-description">Active Semester</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-certificate"></i></div>
-        <h3>Total Credits</h3>
-        <div class="stat-number">98</div>
-        <div class="stat-description">Credits Earned</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-        <h3>Current GPA</h3>
-        <div class="stat-number">3.75</div>
-        <div class="stat-description">Cumulative GPA</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-book-open"></i></div>
-        <h3>Active Courses</h3>
-        <div class="stat-number">6</div>
-        <div class="stat-description">This Semester</div>
-    </div>
-</div>
-
-<div class="sections-grid">
-    <div class="section-card">
-        <div class="section-header">
-            <div class="section-icon"><i class="fas fa-book"></i></div>
-            <h3 class="section-title">Current Courses</h3>
-        </div>
-        <div class="item-list">
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-code"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Web Programming</div>
-                    <div class="item-desc">Prof. Dr. John Doe • 3 Credits • CS301</div>
-                </div>
-                <div class="status-badge badge-excellent">A</div>
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+        <div class="welcome-content">
+            <div class="logo-container">
+                <img src="{{ asset('icons/logo.svg') }}" alt="Logo" class="welcome-logo">
             </div>
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-database"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Database Systems</div>
-                    <div class="item-desc">Dr. Jane Smith • 3 Credits • CS401</div>
-                </div>
-                <div class="status-badge badge-good">B+</div>
-            </div>
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-project-diagram"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Data Structures</div>
-                    <div class="item-desc">Prof. Mike Johnson • 4 Credits • CS201</div>
-                </div>
-                <div class="status-badge badge-excellent">A-</div>
+            <div class="text-content">
+                <h2>Halo {{ Auth::user()->name }}!</h2>
+                <p>Selamat datang di Portal Pengajuan Kerja Praktek - Elektro ITS</p>
             </div>
         </div>
     </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <div class="section-icon"><i class="fas fa-tasks"></i></div>
-            <h3 class="section-title">Assignments & Tasks</h3>
+
+    <div class="assignments-list mb-4">
+        <div class="assignment-card"
+            style="border-left: 4px solid #8A2BE2; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+            <div class="assignment-header pt-2 pb-1">
+                <div class="assignment-info my-auto">
+                    <div class="assignment-title">
+                        Pengumuman Terbaru
+                    </div>
+                </div>
+                <div class="assignment-status">
+                    <div class="status-badge status-pending">Mr. XXX (Dosen Pembimbing)</div>
+                    <div class="due-date">12 Agustus 2025</div>
+                </div>
+            </div>
+            <div class="assignment-body py-3">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ asset('icons/speaker.svg') }}" alt="Speaker" class="mx-3 my-auto"
+                        style="width: 54px; height: 54px;">
+                    <div class="assignment-description mb-0">
+                        Proposal Kerja Praktik <span class="badge text-bg-danger">Rejected</span>
+                        <br>
+                        <span>Proposal Kerja Praktik dengan judul "Kerja Praktik di Pertamina"</span>
+                    </div>
+                </div>
+
+                <div class="assignment-actions">
+                    <div class="action-buttons">
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="#" class="btn btn-outline">
+                            <i class="fas fa-eye"></i> Lihat Surat Pengantar Proposal
+                        </a>
+                    </div>
+                    <div class="progress-indicator">
+                        <i class="fas fa-clock"></i> Last Update : 18 hours Ago
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="item-list">
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-laptop-code"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Laravel Project</div>
-                    <div class="item-desc">Web Programming • Due: Tomorrow</div>
+
+        <div class="assignment-card"
+            style="border-left: 4px solid #8A2BE2; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+            <div class="assignment-header pt-2 pb-1">
+                <div class="assignment-info my-auto">
+                    <div class="assignment-title">
+                        Pengumuman Terbaru
+                    </div>
                 </div>
-                <div class="status-badge badge-pending">Due Soon</div>
+                <div class="assignment-status">
+                    <div class="status-badge status-pending">Mr. XXX (Dosen Pembimbing)</div>
+                    <div class="due-date">12 Agustus 2025</div>
+                </div>
             </div>
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-file-alt"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Database Design Report</div>
-                    <div class="item-desc">Database Systems • Due: Next Week</div>
+            <div class="assignment-body py-3">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ asset('icons/speaker.svg') }}" alt="Speaker" class="mx-3 my-auto"
+                        style="width: 54px; height: 54px;">
+                    <div class="assignment-description mb-0">
+                        Proposal Kerja Praktik <span class="badge text-bg-secondary">Draft</span>
+                        <br>
+                        <span>Proposal Kerja Praktik dengan judul "Kerja Praktik di Pertamina"</span>
+                    </div>
                 </div>
-                <div class="status-badge badge-warning">In Progress</div>
+
+                <div class="assignment-actions">
+                    <div class="action-buttons">
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="#" class="btn btn-outline">
+                            <i class="fas fa-eye"></i> Lihat Surat Pengantar Proposal
+                        </a>
+                    </div>
+                    <div class="progress-indicator">
+                        <i class="fas fa-clock"></i> Last Update : 18 hours Ago
+                    </div>
+                </div>
             </div>
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-search"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Research Proposal</div>
-                    <div class="item-desc">Research Methods • Due: 2 Weeks</div>
+        </div>
+
+
+        <div class="row m-0">
+            <div class="assignment-card col-9 me-2"
+                style="border-left: 4px solid #8A2BE2; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Pengumuman Terbaru
+                        </div>
+                    </div>
+
                 </div>
-                <div class="status-badge badge-good">Draft Ready</div>
+                <div class="assignment-body pt-2 pb-2">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ asset('icons/cancel.svg') }}" alt="Speaker" class="mx-3 my-auto"
+                            style="width: 54px; height: 54px;">
+                        <div class="assignment-description mb-0">
+                            Mahasiswa belum memenuhi syarat Kerja Praktik
+                            <br>
+                            <span>Mahasiswa yang diperbolehkan melakukan Kerja Praktik adalah mahasiswa yang sudah
+                                setidaknya
+                                menempuh 90 SKS dengan Semester yang berjalan minimal Semester 5</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="assignment-card col"
+                style="border-left: 4px solid #8A2BE2; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Syarat untuk request Kerja Praktik
+                        </div>
+                    </div>
+                </div>
+                <div class="assignment-body pt-2 pb-2">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="assignment-description my-auto mx-auto" style="width: 350px; font-size: 24px;">
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="{{ asset('icons/checker.svg') }}" alt="Checker" class="me-2"
+                                    style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(35%) sepia(85%) saturate(2578%) hue-rotate(100deg) brightness(97%) contrast(86%);">
+                                <span>12/12 SKS</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ asset('icons/checker-gray.svg') }}" alt="Cancel" class="me-2"
+                                    style="width: 20px; height: 20px; filter: grayscale(100%) brightness(70%);">
+                                <span>4/5 Semester</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row m-0">
+            <div class="assignment-card col-9 me-2"
+                style="border-left: 4px solid #8A2BE2; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Pengumuman Terbaru
+                        </div>
+                    </div>
+
+                </div>
+                <div class="assignment-body py-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ asset('icons/allow.svg') }}" alt="Allow" class="mx-3 my-auto"
+                            style="width: 54px; height: 54px;">
+                        <div class="assignment-description mb-0">
+                            Mahasiswa memenuhi syarat Kerja Praktik, Silahkan mengajukan proposal Kerja Praktik
+                            <br>
+                            <span>Mahasiswa yang diperbolehkan melakukan Kerja Praktik adalah mahasiswa yang sudah
+                                setidaknya menempuh 90 SKS dengan Semester yang berjalan minimal Semester 5</span>
+                        </div>
+                    </div>
+                    <div class="assignment-actions">
+                        <div class="action-buttons">
+                            <a href="#" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Buat Permohonan Proposal
+                            </a>
+                            <a href="#" class="btn btn-outline">
+                                <i class="fas fa-signature"></i> Submit Signature
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="assignment-card col"
+                style="border-left: 4px solid #8A2BE2; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Syarat untuk request Kerja Praktik
+                        </div>
+                    </div>
+                </div>
+                <div class="assignment-body pt-2 pb-2">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="assignment-description my-auto mx-auto" style="width: 350px; font-size: 24px;">
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="{{ asset('icons/checker.svg') }}" alt="Checker" class="me-2"
+                                    style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(35%) sepia(85%) saturate(2578%) hue-rotate(100deg) brightness(97%) contrast(86%);">
+                                <span>12/12 SKS</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ asset('icons/checker.svg') }}" alt="Checker" class="me-2"
+                                    style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(35%) sepia(85%) saturate(2578%) hue-rotate(100deg) brightness(97%) contrast(86%);">
+                                <span>6/5 Semester</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <div class="section-icon"><i class="fas fa-calendar-alt"></i></div>
-            <h3 class="section-title">Today's Schedule</h3>
-        </div>
-        <div class="item-list">
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-clock"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Web Programming</div>
-                    <div class="item-desc">09:00 AM - 11:00 AM • Room A301</div>
-                </div>
-                <div class="status-badge badge-excellent">Next</div>
+    <!-- Stats Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-stat slide-up">
+                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                <h3>Current Semester</h3>
+                <div class="stat-number">5</div>
+                <div class="stat-description">Active Semester</div>
             </div>
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-clock"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Database Systems</div>
-                    <div class="item-desc">01:00 PM - 03:00 PM • Lab B202</div>
-                </div>
-                <div class="status-badge badge-good">Later</div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-stat slide-up">
+                <div class="stat-icon"><i class="fas fa-certificate"></i></div>
+                <h3>Total Credits</h3>
+                <div class="stat-number">98</div>
+                <div class="stat-description">Credits Earned</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-stat slide-up">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Current GPA</h3>
+                <div class="stat-number">3.75</div>
+                <div class="stat-description">Cumulative GPA</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-stat slide-up">
+                <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                <h3>Active Courses</h3>
+                <div class="stat-number">6</div>
+                <div class="stat-description">This Semester</div>
             </div>
         </div>
     </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <div class="section-icon"><i class="fas fa-trophy"></i></div>
-            <h3 class="section-title">Academic Progress</h3>
+    <!-- Sections Grid -->
+    <div class="row g-4">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-modern">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-book"></i></div>
+                    <h3 class="section-title">Current Courses</h3>
+                </div>
+                <div class="list-modern">
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-code"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Web Programming</div>
+                            <div class="item-desc">Prof. Dr. John Doe • 3 Credits • CS301</div>
+                        </div>
+                        <span class="badge bg-success">A</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-project-diagram"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Data Structures</div>
+                            <div class="item-desc">Prof. Mike Johnson • 4 Credits • CS201</div>
+                        </div>
+                        <span class="badge bg-success">A-</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="item-list">
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-chart-bar"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Semester GPA</div>
-                    <div class="item-desc">Current semester performance</div>
+
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-modern">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-tasks"></i></div>
+                    <h3 class="section-title">Assignments & Tasks</h3>
                 </div>
-                <div class="status-badge badge-excellent">3.85</div>
+                <div class="list-modern">
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-laptop-code"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Laravel Project</div>
+                            <div class="item-desc">Web Programming • Due: Tomorrow</div>
+                        </div>
+                        <span class="badge bg-danger">Due Soon</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Database Design Report</div>
+                            <div class="item-desc">Database Systems • Due: Next Week</div>
+                        </div>
+                        <span class="badge bg-warning">In Progress</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-search"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Research Proposal</div>
+                            <div class="item-desc">Research Methods • Due: 2 Weeks</div>
+                        </div>
+                        <span class="badge bg-info">Draft Ready</span>
+                    </div>
+                </div>
             </div>
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-medal"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Academic Standing</div>
-                    <div class="item-desc">Dean's List qualification</div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-modern">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <h3 class="section-title">Today's Schedule</h3>
                 </div>
-                <div class="status-badge badge-excellent">Excellent</div>
+                <div class="list-modern">
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-clock"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Web Programming</div>
+                            <div class="item-desc">09:00 AM - 11:00 AM • Room A301</div>
+                        </div>
+                        <span class="badge badge-primary-custom">Next</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-clock"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Database Systems</div>
+                            <div class="item-desc">01:00 PM - 03:00 PM • Lab B202</div>
+                        </div>
+                        <span class="badge bg-secondary">Later</span>
+                    </div>
+                </div>
             </div>
-            <div class="list-item">
-                <div class="item-icon"><i class="fas fa-graduation-cap"></i></div>
-                <div class="item-content">
-                    <div class="item-title">Graduation Progress</div>
-                    <div class="item-desc">68% towards graduation</div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card-modern">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-trophy"></i></div>
+                    <h3 class="section-title">Academic Progress</h3>
                 </div>
-                <div class="status-badge badge-good">On Track</div>
+                <div class="list-modern">
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-chart-bar"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Semester GPA</div>
+                            <div class="item-desc">Current semester performance</div>
+                        </div>
+                        <span class="badge bg-success">3.85</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-medal"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Academic Standing</div>
+                            <div class="item-desc">Dean's List qualification</div>
+                        </div>
+                        <span class="badge bg-success">Excellent</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-graduation-cap"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Graduation Progress</div>
+                            <div class="item-desc">68% towards graduation</div>
+                        </div>
+                        <span class="badge bg-info">On Track</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
 @endsection

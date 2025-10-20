@@ -38,6 +38,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/grades', [AuthController::class, 'mahasiswaGrades'])->name('mahasiswa.grades');
     Route::get('/mahasiswa/schedule', [AuthController::class, 'mahasiswaSchedule'])->name('mahasiswa.schedule');
     Route::get('/mahasiswa/assignments', [AuthController::class, 'mahasiswaAssignments'])->name('mahasiswa.assignments');
+    Route::get('/mahasiswa/formal-requests', [AuthController::class, 'mahasiswaFormalRequests'])->name('mahasiswa.formal-requests');
+    Route::get('/mahasiswa/form-formal-requests', [AuthController::class, 'mahasiswaFormFormalRequests'])->name('mahasiswa.formal-requests');
+    
     Route::get('/mahasiswa/settings', [AuthController::class, 'mahasiswaSettings'])->name('mahasiswa.settings');
     Route::get('/mahasiswa/profile', [AuthController::class, 'mahasiswaProfile'])->name('mahasiswa.profile');
 });

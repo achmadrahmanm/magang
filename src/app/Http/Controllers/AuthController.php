@@ -143,6 +143,22 @@ class AuthController extends Controller
     }
 
     /**
+     * Show mahasiswa formal requests
+     */
+    public function mahasiswaFormalRequests()
+    {
+        return view('mahasiswa.formalrequests');
+    }
+
+    /**
+     * Show form to create a new formal request
+    */
+    public function mahasiswaFormFormalRequests()
+    {
+        return view('mahasiswa.form_formalrequest');
+    }
+
+    /**
      * Show mahasiswa settings
      */
     public function mahasiswaSettings()
