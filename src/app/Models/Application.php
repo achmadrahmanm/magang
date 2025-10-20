@@ -152,7 +152,7 @@ class Application extends Model
      */
     public function canBeEdited(): bool
     {
-        return in_array($this->status, ['submitted', 'rejected']);
+        return in_array($this->status, ['draft', 'submitted', 'rejected']);
     }
 
     /**
@@ -169,6 +169,7 @@ class Application extends Model
     public function getStatusBadgeClass(): string
     {
         return match($this->status) {
+            'draft' => 'badge-secondary',
             'submitted' => 'badge-warning',
             'reviewing' => 'badge-info',
             'approved' => 'badge-success',
@@ -183,6 +184,7 @@ class Application extends Model
     public function getStatusDisplayText(): string
     {
         return match($this->status) {
+            'draft' => 'Draft',
             'submitted' => 'Diajukan',
             'reviewing' => 'Dalam Review',
             'approved' => 'Disetujui',

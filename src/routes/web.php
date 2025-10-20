@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/settings', [AuthController::class, 'mahasiswaSettings'])->name('mahasiswa.settings');
     Route::get('/mahasiswa/profile', [AuthController::class, 'mahasiswaProfile'])->name('mahasiswa.profile');
     
-    // Mahasiswa Proposal routes
+    // Mahasiswa Application routes (formerly Proposal routes)
     Route::post('/mahasiswa/store-proposal', [MahasiswaController::class, 'storeProposal'])->name('mahasiswa.store-proposal');
     Route::post('/mahasiswa/save-draft', [MahasiswaController::class, 'saveDraft'])->name('mahasiswa.save-draft');
     Route::get('/mahasiswa/proposals', [MahasiswaController::class, 'getProposals'])->name('mahasiswa.get-proposals');
@@ -53,6 +53,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/proposal/{proposalId}/preview', [MahasiswaController::class, 'previewProposal'])->name('mahasiswa.preview-proposal');
     Route::delete('/mahasiswa/proposal/{proposalId}', [MahasiswaController::class, 'deleteProposal'])->name('mahasiswa.delete-proposal');
     Route::get('/mahasiswa/business-fields', [MahasiswaController::class, 'getBusinessFields'])->name('mahasiswa.business-fields');
+    
+    // New Application Management routes
+    Route::get('/mahasiswa/applications', [MahasiswaController::class, 'getProposals'])->name('mahasiswa.applications');
+    Route::get('/mahasiswa/application/{applicationId}/download', [MahasiswaController::class, 'downloadProposal'])->name('mahasiswa.download-application');
+    Route::get('/mahasiswa/application/{applicationId}/preview', [MahasiswaController::class, 'previewProposal'])->name('mahasiswa.preview-application');
+    Route::delete('/mahasiswa/application/{applicationId}', [MahasiswaController::class, 'deleteProposal'])->name('mahasiswa.delete-application');
     
     // Mahasiswa Signature routes
     Route::get('/mahasiswa/signature', [MahasiswaController::class, 'showSignaturePage'])->name('mahasiswa.signature');

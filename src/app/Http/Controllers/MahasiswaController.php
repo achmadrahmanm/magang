@@ -6,8 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\UserSignature;
+use App\Models\BusinessField;
+use App\Models\Application;
+use App\Models\ApplicationMember;
+use App\Models\ApplicationDocument;
+use App\Models\Student;
 
 class MahasiswaController extends Controller
 {
@@ -51,67 +57,126 @@ class MahasiswaController extends Controller
                     ->with('error', 'Terdapat kesalahan dalam pengisian form. Silakan periksa kembali.');
             }
 
-            // Handle file upload
-            $proposalPath = null;
-            if ($request->hasFile('proposal_file')) {
-                $file = $request->file('proposal_file');
-                $filename = 'proposal_' . Auth::id() . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $proposalPath = $file->storeAs('proposals', $filename, 'public');
+            // Get current user's student record
+            $currentStudent = Student::where('user_id', Auth::id())->first();
+            if (!$currentStudent) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Data mahasiswa tidak ditemukan. Silakan hubungi administrator.');
             }
 
-            // Generate unique proposal ID
-            $proposalId = 'PROP-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            DB::beginTransaction();
 
-            // Mock data structure (in real app, this would be saved to database)
-            $proposalData = [
-                'id' => $proposalId,
-                'user_id' => Auth::id(),
-                'user_name' => Auth::user()->name,
-                'user_email' => Auth::user()->email,
-                'topic' => $request->topic,
-                'company' => $request->company,
-                'company_address' => $request->company_address,
+            // Calculate end date based on duration
+            $startDate = \Carbon\Carbon::parse($request->start_date);
+            $endDate = $startDate->copy()->addMonths($request->duration);
+
+            // Create application
+            $application = Application::create([
+                'institution_name' => $request->company,
+                'institution_address' => $request->company_address,
                 'business_field' => $request->business_field,
-                'department' => $request->department,
-                'division' => $request->division,
-                'start_date' => $request->start_date,
-                'duration' => $request->duration,
-                'proposal_file_path' => $proposalPath,
-                'members' => $request->members,
+                'placement_division' => $request->division ?: $request->department,
+                'planned_start_date' => $request->start_date,
+                'planned_end_date' => $endDate,
+                'notes' => $request->topic,
                 'status' => 'submitted',
-                'submitted_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now()
-            ];
+                'submitted_by' => Auth::id(),
+            ]);
 
-            // Store in session for demo purposes (in real app, save to database)
-            $existingProposals = session('user_proposals', []);
-            $existingProposals[] = $proposalData;
-            session(['user_proposals' => $existingProposals]);
+            // Handle file upload
+            if ($request->hasFile('proposal_file')) {
+                $file = $request->file('proposal_file');
+                $filename = 'proposal_' . $application->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('applications/' . $application->id, $filename, 'public');
 
-            // Log the submission (mock)
-            \Log::info('Internship Proposal Submitted', [
-                'proposal_id' => $proposalId,
+                // Create document record
+                ApplicationDocument::create([
+                    'application_id' => $application->id,
+                    'document_type' => 'purpose_letter',
+                    'document_name' => $file->getClientOriginalName(),
+                    'file_path' => $filePath,
+                    'mime_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                    'description' => 'Surat permohonan magang yang diupload saat aplikasi',
+                    'is_required' => true,
+                    'uploaded_by' => Auth::id(),
+                ]);
+            }
+
+            // Add current user as leader by default
+            ApplicationMember::create([
+                'application_id' => $application->id,
+                'student_id' => $currentStudent->id,
+                'role' => 'leader',
+                'notes' => 'Pengaju utama aplikasi magang',
+                'joined_at' => now(),
+            ]);
+
+            // Add other members
+            foreach ($request->members as $memberData) {
+                // Skip if it's the current user (already added as leader)
+                if ($memberData['student_id'] === $currentStudent->nrp) {
+                    continue;
+                }
+
+                // Find or create student by NRP
+                $student = Student::where('nrp', $memberData['student_id'])->first();
+                
+                if (!$student) {
+                    // Create temporary student record if not exists
+                    // In production, you might want to validate this differently
+                    $student = Student::create([
+                        'user_id' => null, // Will be linked when user registers
+                        'nrp' => $memberData['student_id'],
+                        'nama_resmi' => $memberData['name'],
+                        'email_kampus' => $memberData['email'],
+                        'prodi' => $currentStudent->prodi, // Use same program as leader
+                        'fakultas' => $currentStudent->fakultas,
+                        'angkatan' => $memberData['year'],
+                        'semester_berjalan' => 1,
+                        'sks_total' => 0,
+                        'status_akademik' => 'aktif'
+                    ]);
+                }
+
+                ApplicationMember::create([
+                    'application_id' => $application->id,
+                    'student_id' => $student->id,
+                    'role' => 'member',
+                    'notes' => 'Anggota tim magang',
+                    'joined_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            // Log the submission
+            \Log::info('Internship Application Submitted', [
+                'application_id' => $application->id,
                 'user_id' => Auth::id(),
                 'company' => $request->company,
                 'members_count' => count($request->members),
-                'file_size' => $request->file('proposal_file')->getSize()
+                'file_size' => $request->hasFile('proposal_file') ? $request->file('proposal_file')->getSize() : 0
             ]);
 
             return redirect()
                 ->route('mahasiswa.formal-requests')
-                ->with('success', "Proposal berhasil disubmit! ID Proposal: {$proposalId}")
-                ->with('proposal_id', $proposalId);
+                ->with('success', "Aplikasi magang berhasil disubmit! ID Aplikasi: APP-{$application->id}")
+                ->with('application_id', $application->id);
 
         } catch (\Exception $e) {
-            \Log::error('Error submitting proposal', [
+            DB::rollBack();
+            
+            \Log::error('Error submitting application', [
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan proposal. Silakan coba lagi.');
+                ->with('error', 'Terjadi kesalahan saat menyimpan aplikasi. Silakan coba lagi.');
         }
     }
 
@@ -121,35 +186,115 @@ class MahasiswaController extends Controller
     public function saveDraft(Request $request)
     {
         try {
-            $draftId = 'DRAFT-' . Auth::id() . '-' . time();
-            
-            // Mock draft storage
-            $draftData = [
-                'id' => $draftId,
-                'user_id' => Auth::id(),
-                'data' => $request->except(['_token', 'proposal_file']),
-                'status' => 'draft',
-                'saved_at' => now()
-            ];
+            DB::beginTransaction();
+
+            // Get current user's student record
+            $currentStudent = Student::where('user_id', Auth::id())->first();
+            if (!$currentStudent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data mahasiswa tidak ditemukan'
+                ], 422);
+            }
+
+            // Check if user already has a draft
+            $existingDraft = Application::where('submitted_by', Auth::id())
+                ->where('status', 'draft')
+                ->first();
+
+            $endDate = null;
+            if ($request->start_date && $request->duration) {
+                $startDate = \Carbon\Carbon::parse($request->start_date);
+                $endDate = $startDate->copy()->addMonths(intval($request->duration));
+            }
+
+            if ($existingDraft) {
+                // Update existing draft
+                $existingDraft->update([
+                    'institution_name' => $request->company ?: $existingDraft->institution_name,
+                    'institution_address' => $request->company_address ?: $existingDraft->institution_address,
+                    'business_field' => $request->business_field ?: $existingDraft->business_field,
+                    'placement_division' => $request->division ?: $request->department ?: $existingDraft->placement_division,
+                    'planned_start_date' => $request->start_date ?: $existingDraft->planned_start_date,
+                    'planned_end_date' => $endDate ?: $existingDraft->planned_end_date,
+                    'notes' => $request->topic ?: $existingDraft->notes,
+                ]);
+                
+                $application = $existingDraft;
+            } else {
+                // Create new draft
+                $application = Application::create([
+                    'institution_name' => $request->company ?: 'Draft Company',
+                    'institution_address' => $request->company_address ?: '',
+                    'business_field' => $request->business_field ?: 'other',
+                    'placement_division' => $request->division ?: $request->department ?: 'Draft Division',
+                    'planned_start_date' => $request->start_date ?: now()->addMonth(),
+                    'planned_end_date' => $endDate ?: now()->addMonths(6),
+                    'notes' => $request->topic ?: 'Draft proposal',
+                    'status' => 'draft',
+                    'submitted_by' => Auth::id(),
+                ]);
+
+                // Add current user as leader
+                ApplicationMember::create([
+                    'application_id' => $application->id,
+                    'student_id' => $currentStudent->id,
+                    'role' => 'leader',
+                    'notes' => 'Draft - Pengaju utama',
+                    'joined_at' => now(),
+                ]);
+            }
 
             // Handle file upload for draft if exists
             if ($request->hasFile('proposal_file')) {
+                // Delete old draft file if exists
+                $oldDocument = $application->documents()
+                    ->where('document_type', 'draft_purpose_letter')
+                    ->first();
+                
+                if ($oldDocument) {
+                    if (Storage::disk('public')->exists($oldDocument->file_path)) {
+                        Storage::disk('public')->delete($oldDocument->file_path);
+                    }
+                    $oldDocument->delete();
+                }
+
+                // Upload new file
                 $file = $request->file('proposal_file');
-                $filename = 'draft_' . Auth::id() . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $draftData['proposal_file_path'] = $file->storeAs('drafts', $filename, 'public');
+                $filename = 'draft_' . $application->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('applications/' . $application->id . '/drafts', $filename, 'public');
+
+                ApplicationDocument::create([
+                    'application_id' => $application->id,
+                    'document_type' => 'draft_purpose_letter',
+                    'document_name' => $file->getClientOriginalName(),
+                    'file_path' => $filePath,
+                    'mime_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                    'description' => 'Draft proposal document',
+                    'is_required' => false,
+                    'uploaded_by' => Auth::id(),
+                ]);
             }
 
-            // Store draft in session
-            session(['proposal_draft' => $draftData]);
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Draft berhasil disimpan',
-                'draft_id' => $draftId,
-                'saved_at' => now()->format('d M Y H:i')
+                'draft_id' => $application->id,
+                'application_id' => 'DRAFT-' . $application->id,
+                'saved_at' => $application->updated_at->format('d M Y H:i')
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
+            \Log::error('Error saving draft', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan draft: ' . $e->getMessage()
@@ -162,106 +307,276 @@ class MahasiswaController extends Controller
      */
     public function getProposals()
     {
-        $proposals = session('user_proposals', []);
-        $draft = session('proposal_draft');
-        
-        return response()->json([
-            'proposals' => $proposals,
-            'draft' => $draft,
-            'total' => count($proposals)
-        ]);
+        try {
+            $user = Auth::user();
+            
+            // Get applications where user is the submitter or a member
+            $applications = Application::with([
+                'members.student.user',
+                'documents',
+                'submittedBy',
+                'reviewedBy'
+            ])
+            ->where('submitted_by', $user->id)
+            ->latest()
+            ->get();
+
+            // Format applications data
+            $formattedApplications = $applications->map(function ($application) {
+                $members = $application->members->map(function ($member) {
+                    return [
+                        'student_id' => $member->student->nrp ?? 'N/A',
+                        'name' => $member->student->nama_resmi ?? 'Unknown',
+                        'email' => $member->student->email_kampus ?? 'N/A',
+                        'year' => $member->student->angkatan ?? date('Y'),
+                        'role' => $member->role,
+                        'notes' => $member->notes
+                    ];
+                });
+
+                $documents = $application->documents->map(function ($doc) {
+                    return [
+                        'id' => $doc->id,
+                        'type' => $doc->document_type,
+                        'name' => $doc->document_name,
+                        'size' => $doc->file_size_human,
+                        'is_verified' => $doc->is_verified,
+                        'uploaded_at' => $doc->created_at->format('d M Y H:i')
+                    ];
+                });
+
+                return [
+                    'id' => $application->id,
+                    'application_id' => 'APP-' . $application->id,
+                    'user_id' => $application->submitted_by,
+                    'user_name' => $application->submittedBy->name,
+                    'user_email' => $application->submittedBy->email,
+                    'topic' => $application->notes,
+                    'company' => $application->institution_name,
+                    'company_address' => $application->institution_address,
+                    'business_field' => $application->business_field,
+                    'department' => $application->placement_division,
+                    'division' => $application->placement_division,
+                    'start_date' => $application->planned_start_date->format('Y-m-d'),
+                    'end_date' => $application->planned_end_date->format('Y-m-d'),
+                    'duration' => $application->getDurationInDays(),
+                    'members' => $members,
+                    'documents' => $documents,
+                    'status' => $application->status,
+                    'status_display' => $application->getStatusDisplayText(),
+                    'status_badge_class' => $application->getStatusBadgeClass(),
+                    'status_note' => $application->status_note,
+                    'rejection_reason' => $application->rejection_reason,
+                    'reviewed_by' => $application->reviewedBy?->name,
+                    'reviewed_at' => $application->reviewed_at?->format('d M Y H:i'),
+                    'submitted_at' => $application->created_at->format('d M Y H:i'),
+                    'created_at' => $application->created_at,
+                    'updated_at' => $application->updated_at
+                ];
+            });
+
+            // Get draft data (still from session for now)
+            $draft = session('proposal_draft');
+            
+            return response()->json([
+                'success' => true,
+                'applications' => $formattedApplications,
+                'proposals' => $formattedApplications, // For backward compatibility
+                'draft' => $draft,
+                'total' => $formattedApplications->count()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching applications', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data aplikasi',
+                'applications' => [],
+                'proposals' => [],
+                'total' => 0
+            ], 500);
+        }
     }
 
     /**
      * Download proposal file
      */
-    public function downloadProposal($proposalId)
+    public function downloadProposal($applicationId)
     {
         try {
-            // Find proposal in session data
-            $proposals = session('user_proposals', []);
-            $proposal = collect($proposals)->firstWhere('id', $proposalId);
+            // Find application
+            $application = Application::with(['documents', 'submittedBy'])
+                ->where('id', $applicationId)
+                ->first();
 
-            if (!$proposal) {
-                abort(404, 'Proposal tidak ditemukan');
+            if (!$application) {
+                abort(404, 'Aplikasi tidak ditemukan');
             }
 
-            // Check if user owns this proposal
-            if ($proposal['user_id'] !== Auth::id()) {
-                abort(403, 'Anda tidak memiliki akses ke proposal ini');
+            // Check if user owns this application or is a member
+            $userCanAccess = $application->submitted_by === Auth::id() || 
+                            $application->members()->whereHas('student', function($q) {
+                                $q->where('user_id', Auth::id());
+                            })->exists();
+
+            if (!$userCanAccess) {
+                abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
             }
 
-            if (!$proposal['proposal_file_path'] || !Storage::disk('public')->exists($proposal['proposal_file_path'])) {
-                abort(404, 'File proposal tidak ditemukan');
+            // Get the main proposal document (purpose_letter)
+            $document = $application->documents()
+                ->where('document_type', 'purpose_letter')
+                ->first();
+
+            if (!$document) {
+                abort(404, 'Dokumen proposal tidak ditemukan');
+            }
+
+            if (!Storage::disk('public')->exists($document->file_path)) {
+                abort(404, 'File tidak ditemukan di storage');
             }
 
             return Storage::disk('public')->download(
-                $proposal['proposal_file_path'],
-                'Proposal_' . $proposal['company'] . '_' . $proposal['id'] . '.pdf'
+                $document->file_path,
+                'Proposal_' . Str::slug($application->institution_name) . '_APP-' . $application->id . '.pdf'
             );
 
         } catch (\Exception $e) {
-            \Log::error('Error downloading proposal', [
-                'proposal_id' => $proposalId,
+            \Log::error('Error downloading application document', [
+                'application_id' => $applicationId,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
 
-            return back()->with('error', 'Gagal mengunduh file proposal');
+            return back()->with('error', 'Gagal mengunduh file dokumen');
         }
     }
 
     /**
      * Preview proposal file
      */
-    public function previewProposal($proposalId)
+    public function previewProposal($applicationId)
     {
         try {
-            $proposals = session('user_proposals', []);
-            $proposal = collect($proposals)->firstWhere('id', $proposalId);
+            // Find application
+            $application = Application::with('documents')
+                ->where('id', $applicationId)
+                ->first();
 
-            if (!$proposal || $proposal['user_id'] !== Auth::id()) {
-                abort(404);
+            if (!$application) {
+                abort(404, 'Aplikasi tidak ditemukan');
             }
 
-            if (!$proposal['proposal_file_path'] || !Storage::disk('public')->exists($proposal['proposal_file_path'])) {
-                abort(404, 'File tidak ditemukan');
+            // Check if user owns this application or is a member
+            $userCanAccess = $application->submitted_by === Auth::id() || 
+                            $application->members()->whereHas('student', function($q) {
+                                $q->where('user_id', Auth::id());
+                            })->exists();
+
+            if (!$userCanAccess) {
+                abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
             }
 
-            $filePath = Storage::disk('public')->path($proposal['proposal_file_path']);
+            // Get the main proposal document (purpose_letter)
+            $document = $application->documents()
+                ->where('document_type', 'purpose_letter')
+                ->first();
+
+            if (!$document) {
+                abort(404, 'Dokumen proposal tidak ditemukan');
+            }
+
+            if (!Storage::disk('public')->exists($document->file_path)) {
+                abort(404, 'File tidak ditemukan di storage');
+            }
+
+            $filePath = Storage::disk('public')->path($document->file_path);
             
             return response()->file($filePath, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="proposal_preview.pdf"'
+                'Content-Type' => $document->mime_type ?: 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $document->document_name . '"'
             ]);
 
         } catch (\Exception $e) {
-            abort(404);
+            \Log::error('Error previewing application document', [
+                'application_id' => $applicationId,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+            
+            abort(404, 'File tidak dapat ditampilkan');
         }
     }
 
     /**
-     * Delete proposal (for testing purposes)
+     * Delete proposal/application
      */
-    public function deleteProposal($proposalId)
+    public function deleteProposal($applicationId)
     {
         try {
-            $proposals = session('user_proposals', []);
-            $updatedProposals = collect($proposals)->reject(function ($proposal) use ($proposalId) {
-                return $proposal['id'] === $proposalId && $proposal['user_id'] === Auth::id();
-            })->values()->toArray();
+            DB::beginTransaction();
 
-            session(['user_proposals' => $updatedProposals]);
+            // Find application
+            $application = Application::where('id', $applicationId)
+                ->where('submitted_by', Auth::id())
+                ->first();
+
+            if (!$application) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aplikasi tidak ditemukan atau Anda tidak memiliki akses'
+                ], 404);
+            }
+
+            // Check if application can be deleted (only submitted or rejected status)
+            if (!in_array($application->status, ['submitted', 'rejected'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aplikasi dengan status "' . $application->getStatusDisplayText() . '" tidak dapat dihapus'
+                ], 422);
+            }
+
+            // Delete all associated documents from storage
+            $documents = $application->documents;
+            foreach ($documents as $document) {
+                if (Storage::disk('public')->exists($document->file_path)) {
+                    Storage::disk('public')->delete($document->file_path);
+                }
+            }
+
+            // Delete the application (cascade will handle members and documents)
+            $companyName = $application->institution_name;
+            $application->delete();
+
+            DB::commit();
+
+            \Log::info('Application deleted', [
+                'application_id' => $applicationId,
+                'user_id' => Auth::id(),
+                'company' => $companyName
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Proposal berhasil dihapus'
+                'message' => 'Aplikasi berhasil dihapus'
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
+            \Log::error('Error deleting application', [
+                'application_id' => $applicationId,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus proposal'
+                'message' => 'Gagal menghapus aplikasi: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -271,22 +586,68 @@ class MahasiswaController extends Controller
      */
     public function getBusinessFields()
     {
-        $businessFields = [
-            'Technology' => 'Teknologi Informasi',
-            'Finance' => 'Keuangan & Perbankan',
-            'Manufacturing' => 'Manufaktur',
-            'Healthcare' => 'Kesehatan',
-            'Education' => 'Pendidikan',
-            'Retail' => 'Retail & E-commerce',
-            'Energy' => 'Energi & Pertambangan',
-            'Transportation' => 'Transportasi & Logistik',
-            'Construction' => 'Konstruksi & Properti',
-            'Media' => 'Media & Komunikasi',
-            'Government' => 'Pemerintahan',
-            'Other' => 'Lainnya'
-        ];
+        try {
+            // Get active business fields from database
+            $businessFields = BusinessField::active()
+                                          ->ordered()
+                                          ->get()
+                                          ->map(function ($field) {
+                                              return [
+                                                  'code' => $field->code,
+                                                  'name' => $field->name,
+                                                  'name_en' => $field->name_en,
+                                                  'description' => $field->description,
+                                                  'icon' => $field->display_icon,
+                                                  'color' => $field->display_color,
+                                                  'metadata' => $field->metadata
+                                              ];
+                                          });
 
-        return response()->json($businessFields);
+            // For backward compatibility, also return simple key-value pairs
+            $simpleFields = BusinessField::getSelectOptions();
+
+            return response()->json([
+                'success' => true,
+                'data' => $businessFields,
+                'simple' => $simpleFields, // For simple select dropdowns
+                'total' => $businessFields->count()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching business fields', [
+                'error' => $e->getMessage()
+            ]);
+
+            // Fallback to hardcoded data if database fails
+            $fallbackFields = [
+                'technology' => 'Teknologi Informasi',
+                'finance' => 'Keuangan & Perbankan',
+                'manufacturing' => 'Manufaktur',
+                'healthcare' => 'Kesehatan',
+                'education' => 'Pendidikan',
+                'retail' => 'Retail & E-commerce',
+                'energy' => 'Energi & Pertambangan',
+                'transportation' => 'Transportasi & Logistik',
+                'construction' => 'Konstruksi & Properti',
+                'media' => 'Media & Komunikasi',
+                'government' => 'Pemerintahan',
+                'other' => 'Lainnya'
+            ];
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Using fallback data',
+                'data' => collect($fallbackFields)->map(function ($name, $code) {
+                    return [
+                        'code' => $code,
+                        'name' => $name,
+                        'icon' => 'fas fa-building',
+                        'color' => '#6c757d'
+                    ];
+                })->values(),
+                'simple' => $fallbackFields
+            ]);
+        }
     }
 
     /**
