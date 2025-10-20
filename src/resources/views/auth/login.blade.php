@@ -32,6 +32,10 @@
             background-position: center !important;
             background-repeat: no-repeat !important;
             background-size: cover !important;
+            backdrop-filter: blur(5px) !important;
+            /* make background dimmer */
+                
+          
             min-height: 100vh !important;
             height: 100vh !important;
         }

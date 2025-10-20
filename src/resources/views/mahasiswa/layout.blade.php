@@ -28,7 +28,7 @@
             left: 0;
             height: 100vh;
             width: 260px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #29166F 0%, #4c2c91 100%);
             padding: 1rem 0;
             transition: transform 0.3s ease;
             z-index: 1000;
@@ -198,7 +198,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, #29166F, #4c2c91);
             color: white;
             display: flex;
             align-items: center;
@@ -280,7 +280,7 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, #29166F, #4c2c91);
             color: white;
             display: flex;
             align-items: center;
@@ -316,7 +316,7 @@
         }
 
         .dropdown-user-role {
-            color: #28a745;
+            color: #29166F;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -350,7 +350,7 @@
 
         .dropdown-item i {
             width: 16px;
-            color: #28a745;
+            color: #29166F;
         }
 
         .dropdown-divider {

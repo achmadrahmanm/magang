@@ -44,13 +44,13 @@
     }
 
     .today-class:hover {
-        border-color: #28a745;
+        border-color: #29166F;
         background: #f8fff9;
     }
 
     .today-class.active {
-        border-color: #28a745;
-        background: linear-gradient(135deg, #28a745, #20c997);
+        border-color: #29166F;
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
     }
 
@@ -79,7 +79,7 @@
     }
 
     .schedule-header {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         padding: 1.5rem;
         display: flex;
@@ -148,7 +148,7 @@
     }
 
     .class-block {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         border-radius: 8px;
         padding: 0.5rem;

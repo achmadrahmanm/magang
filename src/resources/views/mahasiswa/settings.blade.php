@@ -44,7 +44,7 @@
 
     .settings-nav-item:hover,
     .settings-nav-item.active {
-        background: #28a745;
+        background: #29166F;
         color: white;
         text-decoration: none;
     }
@@ -62,7 +62,7 @@
     }
 
     .content-header {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         padding: 2rem;
         border-radius: 16px 16px 0 0;
@@ -113,8 +113,8 @@
 
     .form-control:focus {
         outline: none;
-        border-color: #28a745;
-        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        border-color: #29166F;
+        box-shadow: 0 0 0 3px rgba(41, 22, 111, 0.1);
         background-color: white;
     }
 
@@ -134,15 +134,15 @@
     }
 
     .profile-picture:hover {
-        border-color: #28a745;
-        background: #f8fff9;
+        border-color: #29166F;
+        background: #f8f7ff;
     }
 
     .current-avatar {
         width: 120px;
         height: 120px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         display: flex;
         align-items: center;
@@ -152,7 +152,7 @@
     }
 
     .upload-btn {
-        background: #28a745;
+        background: #29166F;
         color: white;
         border: none;
         padding: 0.5rem 1rem;
@@ -163,7 +163,7 @@
     }
 
     .upload-btn:hover {
-        background: #218838;
+        background: #1f0e4f;
     }
 
     .notification-item {
@@ -178,7 +178,7 @@
     }
 
     .notification-item:hover {
-        border-color: #28a745;
+        border-color: #29166F;
     }
 
     .notification-info {
@@ -207,7 +207,7 @@
     }
 
     .toggle-switch.active {
-        background: #28a745;
+        background: #29166F;
     }
 
     .toggle-switch::before {
@@ -239,7 +239,7 @@
     }
 
     .btn-primary {
-        background: #28a745;
+        background: #29166F;
         color: white;
         border: none;
         padding: 0.75rem 2rem;
@@ -251,7 +251,7 @@
     }
 
     .btn-primary:hover {
-        background: #218838;
+        background: #1f0e4f;
         transform: translateY(-2px);
     }
 

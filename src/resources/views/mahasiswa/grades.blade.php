@@ -32,7 +32,7 @@
         margin-bottom: 1rem;
     }
 
-    .gpa-icon { color: #28a745; }
+    .gpa-icon { color: #29166F; }
     .semester-icon { color: #007bff; }
     .credits-icon { color: #ffc107; }
     .standing-icon { color: #6f42c1; }
@@ -66,7 +66,7 @@
     }
 
     .table-header {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         padding: 1.5rem;
     }
@@ -164,7 +164,7 @@
     }
 
     .semester-item:hover {
-        border-color: #28a745;
+        border-color: #29166F;
         background: #f8fff9;
     }
 
@@ -177,7 +177,7 @@
     .semester-number {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         border-radius: 50%;
         display: flex;
@@ -205,7 +205,7 @@
     .semester-gpa {
         font-size: 1.1rem;
         font-weight: 700;
-        color: #28a745;
+        color: #29166F;
     }
 
     .transcript-section {
@@ -219,7 +219,7 @@
 
     .transcript-icon {
         font-size: 3rem;
-        color: #28a745;
+        color: #29166F;
         margin-bottom: 1rem;
     }
 
@@ -236,7 +236,7 @@
     }
 
     .btn-download {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         border: none;
         padding: 0.75rem 2rem;

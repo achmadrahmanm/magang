@@ -38,8 +38,8 @@
 
     .filter-tab.active,
     .filter-tab:hover {
-        border-color: #28a745;
-        background: #28a745;
+        border-color: #29166F;
+        background: #29166F;
         color: white;
     }
 
@@ -58,7 +58,7 @@
     }
 
     .stat-item:hover {
-        border-color: #28a745;
+        border-color: #29166F;
     }
 
     .stat-number {
@@ -136,7 +136,7 @@
     }
 
     .meta-icon {
-        color: #28a745;
+        color: #29166F;
     }
 
     .assignment-status {
@@ -257,23 +257,23 @@
     }
 
     .btn-primary {
-        background: #28a745;
+        background: #29166F;
         color: white;
     }
 
     .btn-primary:hover {
-        background: #218838;
+        background: #1f0e4f;
         transform: translateY(-2px);
     }
 
     .btn-outline {
         background: transparent;
-        color: #28a745;
-        border: 2px solid #28a745;
+        color: #29166F;
+        border: 2px solid #29166F;
     }
 
     .btn-outline:hover {
-        background: #28a745;
+        background: #29166F;
         color: white;
     }
 

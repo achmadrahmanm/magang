@@ -28,7 +28,7 @@
 
     .course-header {
         padding: 1.5rem;
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         color: white;
         position: relative;
     }
@@ -68,7 +68,7 @@
     }
 
     .info-icon {
-        color: #28a745;
+        color: #29166F;
         width: 20px;
     }
 
@@ -99,7 +99,7 @@
 
     .progress-fill {
         height: 100%;
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #29166F, #4c2c91);
         border-radius: 4px;
         transition: width 0.3s ease;
     }
@@ -124,23 +124,23 @@
     }
 
     .btn-primary {
-        background: #28a745;
+        background: #29166F;
         color: white;
     }
 
     .btn-primary:hover {
-        background: #218838;
+        background: #1f0e4f;
         transform: translateY(-2px);
     }
 
     .btn-outline {
         background: transparent;
-        color: #28a745;
-        border: 2px solid #28a745;
+        color: #29166F;
+        border: 2px solid #29166F;
     }
 
     .btn-outline:hover {
-        background: #28a745;
+        background: #29166F;
         color: white;
     }
 
@@ -179,8 +179,8 @@
 
     .filter-tab.active,
     .filter-tab:hover {
-        border-color: #28a745;
-        background: #28a745;
+        border-color: #29166F;
+        background: #29166F;
         color: white;
     }
 
