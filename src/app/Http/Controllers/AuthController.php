@@ -150,13 +150,6 @@ class AuthController extends Controller
         return view('mahasiswa.formalrequests');
     }
 
-    /**
-     * Show form to create a new formal request
-    */
-    public function mahasiswaFormFormalRequests()
-    {
-        return view('mahasiswa.form_formalrequest');
-    }
 
     /**
      * Show mahasiswa settings
@@ -175,6 +168,17 @@ class AuthController extends Controller
         $identity = $user->identity;
 
         return view('mahasiswa.profile', compact('user', 'identity'));
+    }
+
+    /**
+     * Show mahasiswa signature form
+     */
+    public function mahasiswaSignatureForm()
+    {
+        $user = Auth::user();
+        $identity = $user->identity;
+
+        return view('mahasiswa.signature', compact('user', 'identity'));
     }
 
     /**

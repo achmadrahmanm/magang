@@ -9,19 +9,19 @@
     <div class="assignments-header">
         <div class="filter-tabs">
             <div class="filter-tab active">
-                <i class="fas fa-list"></i> All Assignments
+                <i class="fas fa-list"></i> Semua Permohonan
             </div>
             <div class="filter-tab">
-                <i class="fas fa-clock"></i> Pending
+                <i class="fas fa-clock"></i> Draft
             </div>
             <div class="filter-tab">
                 <i class="fas fa-check"></i> Submitted
             </div>
             <div class="filter-tab">
-                <i class="fas fa-exclamation-triangle"></i> Overdue
+                <i class="fas fa-exclamation-triangle"></i> Rejected
             </div>
             <div class="filter-tab">
-                <i class="fas fa-star"></i> Graded
+                <i class="fas fa-star"></i> Approved
             </div>
         </div>
 
@@ -43,8 +43,13 @@
                 <div class="stat-label">Graded</div>
             </div>
         </div>
-    </div>
 
+        <div class="add-assignment">
+            <a href="{{ route('mahasiswa.form-formal-requests') }}" class="btn btn-primary  w-100 my-3">
+                <i class="fas fa-plus"></i> Tambah Permohonan Formal
+            </a>
+        </div>
+    </div>
     <div class="assignments-list">
         <div class="assignment-card">
             <div class="assignment-header">
@@ -57,7 +62,7 @@
                     <div class="assignment-meta">
                         <div class="meta-item">
                             <i class="fas fa-calendar meta-icon"></i>
-                            <span>Created At : Oct 23, 2025</span>
+                            <span>Dibuat pada : Oct 23, 2025</span>
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-user meta-icon"></i>
@@ -92,7 +97,7 @@
                             <i class="fas fa-edit"></i> Edit Pengajuan Proposal
                         </a>
                         <a href="#" class="btn btn-outline">
-                            <i class="fas fa-users"></i> Group Chat
+                            <i class="fas fa-users"></i> Lihat Member
                         </a>
                     </div>
                     <div class="progress-indicator">
@@ -113,7 +118,7 @@
                     <div class="assignment-meta">
                         <div class="meta-item">
                             <i class="fas fa-calendar meta-icon"></i>
-                            <span>Created At : Oct 20, 2025</span>
+                            <span>Dibuat pada : Oct 20, 2025</span>
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-user meta-icon"></i>

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MahasiswaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -39,8 +40,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/schedule', [AuthController::class, 'mahasiswaSchedule'])->name('mahasiswa.schedule');
     Route::get('/mahasiswa/assignments', [AuthController::class, 'mahasiswaAssignments'])->name('mahasiswa.assignments');
     Route::get('/mahasiswa/formal-requests', [AuthController::class, 'mahasiswaFormalRequests'])->name('mahasiswa.formal-requests');
-    Route::get('/mahasiswa/form-formal-requests', [AuthController::class, 'mahasiswaFormFormalRequests'])->name('mahasiswa.formal-requests');
+    Route::get('/mahasiswa/form-formal-requests', [MahasiswaController::class, 'showFormalRequestForm'])->name('mahasiswa.form-formal-requests');
     
     Route::get('/mahasiswa/settings', [AuthController::class, 'mahasiswaSettings'])->name('mahasiswa.settings');
     Route::get('/mahasiswa/profile', [AuthController::class, 'mahasiswaProfile'])->name('mahasiswa.profile');
+    
+    // Mahasiswa Proposal routes
+    Route::post('/mahasiswa/store-proposal', [MahasiswaController::class, 'storeProposal'])->name('mahasiswa.store-proposal');
+    Route::post('/mahasiswa/save-draft', [MahasiswaController::class, 'saveDraft'])->name('mahasiswa.save-draft');
+    Route::get('/mahasiswa/proposals', [MahasiswaController::class, 'getProposals'])->name('mahasiswa.get-proposals');
+    Route::get('/mahasiswa/proposal/{proposalId}/download', [MahasiswaController::class, 'downloadProposal'])->name('mahasiswa.download-proposal');
+    Route::get('/mahasiswa/proposal/{proposalId}/preview', [MahasiswaController::class, 'previewProposal'])->name('mahasiswa.preview-proposal');
+    Route::delete('/mahasiswa/proposal/{proposalId}', [MahasiswaController::class, 'deleteProposal'])->name('mahasiswa.delete-proposal');
+    Route::get('/mahasiswa/business-fields', [MahasiswaController::class, 'getBusinessFields'])->name('mahasiswa.business-fields');
+    
+    // Mahasiswa Signature routes
+    Route::get('/mahasiswa/signature', [MahasiswaController::class, 'showSignaturePage'])->name('mahasiswa.signature');
+    Route::post('/mahasiswa/save-signature', [MahasiswaController::class, 'saveSignature'])->name('mahasiswa.save-signature');
+    Route::get('/mahasiswa/get-signatures', [MahasiswaController::class, 'getUserSignatures'])->name('mahasiswa.get-signatures');
+    Route::delete('/mahasiswa/signature/{signatureId}', [MahasiswaController::class, 'deleteSignature'])->name('mahasiswa.delete-signature');
+    Route::post('/mahasiswa/signature/{signatureId}/set-active', [MahasiswaController::class, 'setActiveSignature'])->name('mahasiswa.set-active-signature');
+    Route::get('/mahasiswa/signature/{signatureId}/download', [MahasiswaController::class, 'downloadSignature'])->name('mahasiswa.download-signature');
+    
+    // API Test page (development only)
+    Route::get('/mahasiswa/api-test', function() {
+        return view('mahasiswa.api-test');
+    })->name('mahasiswa.api-test');
 });

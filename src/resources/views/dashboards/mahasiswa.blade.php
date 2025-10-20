@@ -180,7 +180,7 @@
                     </div>
                     <div class="assignment-actions">
                         <div class="action-buttons">
-                            <a href="#" class="btn btn-primary">
+                            <a href="{{ route('mahasiswa.form-formal-requests') }}" class="btn btn-primary">
                                 <i class="fas fa-edit"></i> Buat Permohonan Proposal
                             </a>
                             <a href="#" class="btn btn-outline">
@@ -223,7 +223,7 @@
     </div>
 
     <!-- Stats Section -->
-    <div class="row g-4 mb-4">
+    <div class="row g-4 mb-4 d-none">
         <div class="col-xl-3 col-lg-6 col-md-6">
             <div class="card-stat slide-up">
                 <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
@@ -259,7 +259,7 @@
     </div>
 
     <!-- Sections Grid -->
-    <div class="row g-4">
+    <div class="row g-4 d-none">
         <div class="col-xl-3 col-lg-6 col-md-6">
             <div class="card-modern">
                 <div class="section-header">

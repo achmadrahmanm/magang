@@ -55,4 +55,20 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserIdentity::class, 'email', 'email');
     }
+
+    /**
+     * Get all signatures for this user
+     */
+    public function signatures()
+    {
+        return $this->hasMany(UserSignature::class);
+    }
+
+    /**
+     * Get the active signature for this user
+     */
+    public function activeSignature()
+    {
+        return $this->hasOne(UserSignature::class)->where('is_active', true)->latest();
+    }
 }

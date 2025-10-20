@@ -21,12 +21,45 @@
                             </p>
                         </div>
                         <div class="col-md-4 text-end">
-                            <div class="badge-gradient">
-                                <i class="fas fa-clock"></i> Draft
+                            <div class="assignment-status">
+                                <div class="status-badge status-draft">Draft</div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Success/Error Messages -->
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Berhasil!</strong> {{ session('success') }}
+                        @if (session('proposal_id'))
+                            <br><small>ID Proposal: <strong>{{ session('proposal_id') }}</strong></small>
+                        @endif
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>Error!</strong> {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Perhatian:</strong> Terdapat kesalahan dalam pengisian form:
+                        <ul class="mb-0 mt-2">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
                 <!-- Main Form -->
                 <form id="internshipForm" action="{{ route('mahasiswa.store-proposal') }}" method="POST"
@@ -35,7 +68,7 @@
 
                     <!-- Company Information Section -->
                     <div class="card-modern mb-4">
-                        <div class="card-header-gradient mb-4">
+                        <div class="card-header-gradient mb-4 rounded">
                             <h5 class="mb-0">
                                 <i class="fas fa-building"></i>
                                 Informasi Perusahaan
@@ -43,7 +76,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-3 ">
                                 <label class="form-label-modern" for="topic">
                                     <i class="fas fa-lightbulb text-primary"></i>
                                     Topik Magang <span class="text-danger">*</span>
@@ -145,7 +178,7 @@
 
                     <!-- Proposal Document Section -->
                     <div class="card-modern mb-4">
-                        <div class="card-header-gradient mb-4">
+                        <div class="card-header-gradient mb-4 rounded">
                             <h5 class="mb-0">
                                 <i class="fas fa-file-pdf"></i>
                                 Dokumen Proposal
@@ -188,13 +221,13 @@
 
                     <!-- Team Members Section -->
                     <div class="card-modern mb-4">
-                        <div class="card-header-gradient mb-4">
+                        <div class="card-header-gradient mb-4 rounded">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <i class="fas fa-users"></i>
                                     Anggota Tim Magang
                                 </h5>
-                                <button type="button" class="btn btn-outline-primary-custom btn-sm" id="addMemberBtn">
+                                <button type="button" class="btn btn-outline bg-light btn-sm" id="addMemberBtn">
                                     <i class="fas fa-plus"></i> Tambah Anggota
                                 </button>
                             </div>
@@ -263,7 +296,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6 text-end">
-                                <button type="button" class="btn btn-outline-primary-custom me-2">
+                                <button type="button" class="btn btn-outline-primary-custom me-2" id="saveDraftBtn">
                                     <i class="fas fa-save"></i> Simpan Draft
                                 </button>
                                 <button type="submit" class="btn btn-primary-custom">
@@ -502,6 +535,76 @@
                     }
                 }
             });
+
+            // Save Draft functionality
+            document.getElementById('saveDraftBtn').addEventListener('click', function() {
+                const form = document.getElementById('internshipForm');
+                const formData = new FormData(form);
+
+                // Add CSRF token
+                formData.append('_token', '{{ csrf_token() }}');
+
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+                fetch('{{ route('mahasiswa.save-draft') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            showNotification('success', 'Draft berhasil disimpan!',
+                                `Terakhir disimpan: ${data.saved_at}`);
+
+                            // Update badge to show draft saved
+                            const badge = document.querySelector('.badge-gradient');
+                            badge.innerHTML = '<i class="fas fa-save"></i> Draft Tersimpan';
+                        } else {
+                            showNotification('error', 'Gagal menyimpan draft', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('error', 'Terjadi kesalahan',
+                            'Gagal menyimpan draft. Silakan coba lagi.');
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        this.disabled = false;
+                        this.innerHTML = originalText;
+                    });
+            });
+
+            // Notification function
+            function showNotification(type, title, message) {
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+
+                const notification = document.createElement('div');
+                notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+                notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                notification.innerHTML = `
+                    <i class="${icon}"></i>
+                    <strong>${title}</strong> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+
+                document.body.appendChild(notification);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 5000);
+            }
 
             // Form validation
             document.getElementById('internshipForm').addEventListener('submit', function(e) {
