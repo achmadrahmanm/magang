@@ -22,7 +22,25 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <div class="assignment-status">
-                                <div class="status-badge status-draft">Draft</div>
+                                <div class="status-badge status-draft" id="draftStatusBadge">
+                                    @if($draft)
+                                        <i class="fas fa-save"></i> Draft Tersimpan
+                                    @else
+                                        Draft
+                                    @endif
+                                </div>
+                                @if($draft)
+                                    <div class="draft-info mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> 
+                                            Terakhir disimpan: {{ $draft['saved_at'] }}
+                                        </small>
+                                        <br>
+                                        <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="loadDraftBtn">
+                                            <i class="fas fa-download"></i> Muat Draft
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -113,18 +131,24 @@
                                 <select class="form-control form-control-modern" id="business_field" name="business_field"
                                     required>
                                     <option value="">Pilih Bidang Usaha</option>
-                                    <option value="Technology">Teknologi Informasi</option>
-                                    <option value="Finance">Keuangan & Perbankan</option>
-                                    <option value="Manufacturing">Manufaktur</option>
-                                    <option value="Healthcare">Kesehatan</option>
-                                    <option value="Education">Pendidikan</option>
-                                    <option value="Retail">Retail & E-commerce</option>
-                                    <option value="Energy">Energi & Pertambangan</option>
-                                    <option value="Transportation">Transportasi & Logistik</option>
-                                    <option value="Construction">Konstruksi & Properti</option>
-                                    <option value="Media">Media & Komunikasi</option>
-                                    <option value="Government">Pemerintahan</option>
-                                    <option value="Other">Lainnya</option>
+                                    @if(isset($businessFields) && $businessFields->count() > 0)
+                                        @foreach($businessFields as $field)
+                                            <option value="{{ $field['code'] }}">{{ $field['name'] }}</option>
+                                        @endforeach
+                                    @else
+                                        <option value="technology">Teknologi Informasi</option>
+                                        <option value="finance">Keuangan & Perbankan</option>
+                                        <option value="manufacturing">Manufaktur</option>
+                                        <option value="healthcare">Kesehatan</option>
+                                        <option value="education">Pendidikan</option>
+                                        <option value="retail">Retail & E-commerce</option>
+                                        <option value="energy">Energi & Pertambangan</option>
+                                        <option value="transportation">Transportasi & Logistik</option>
+                                        <option value="construction">Konstruksi & Properti</option>
+                                        <option value="media">Media & Komunikasi</option>
+                                        <option value="government">Pemerintahan</option>
+                                        <option value="other">Lainnya</option>
+                                    @endif
                                 </select>
                             </div>
 
@@ -263,7 +287,7 @@
                                             name="members[0][email]" value="{{ Auth::user()->email }}" readonly>
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label-modern">Tahun Angkatan</label>
+                                        <label class="form-label-modern">Angkatan</label>
                                         <input type="number" class="form-control form-control-modern"
                                             name="members[0][year]" placeholder="2023" min="2015" max="2030"
                                             required>
@@ -341,7 +365,7 @@
                         placeholder="email@example.com" required>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label-modern">Tahun Angkatan <span class="text-danger">*</span></label>
+                    <label class="form-label-modern">Angkatan <span class="text-danger">*</span></label>
                     <input type="number" class="form-control form-control-modern" name="members[][year]"
                         placeholder="2023" min="2015" max="2030" required>
                 </div>
@@ -434,6 +458,21 @@
             color: white;
         }
 
+        .status-loaded {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            animation: pulse 2s infinite;
+        }
+
+        .draft-info {
+            font-size: 0.875rem;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
         @media (max-width: 768px) {
             .member-header {
                 flex-direction: column;
@@ -453,6 +492,146 @@
         document.addEventListener('DOMContentLoaded', function() {
             let memberCount = 1; // Start from 1 since leader is 0
             const maxMembers = 4;
+
+            // Load draft data if exists
+            @if($draft)
+                loadDraftData(@json($draft), false);
+            @endif
+
+            // Load Draft Button functionality
+            document.getElementById('loadDraftBtn')?.addEventListener('click', function() {
+                loadDraftFromServer();
+            });
+
+            // Function to load draft data from server
+            function loadDraftFromServer() {
+                const btn = document.getElementById('loadDraftBtn');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
+
+                fetch('{{ route('mahasiswa.load-draft') }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.has_draft) {
+                            loadDraftData(data.draft);
+                            showNotification('success', 'Draft berhasil dimuat!', 'Data draft telah diisi ke formulir');
+                        } else {
+                            showNotification('info', 'Tidak ada draft', 'Belum ada draft yang tersimpan');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading draft:', error);
+                        showNotification('error', 'Gagal memuat draft', 'Terjadi kesalahan saat memuat draft');
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    });
+            }
+
+            // Function to populate form with draft data
+            function loadDraftData(draft, shouldShowNotification = true) {
+                if (!draft) return;
+
+                // Fill basic form fields
+                document.getElementById('topic').value = draft.topic || '';
+                document.getElementById('company').value = draft.company || '';
+                document.getElementById('company_address').value = draft.company_address || '';
+                document.getElementById('business_field').value = draft.business_field || '';
+                document.getElementById('department').value = draft.department || '';
+                document.getElementById('division').value = draft.division || '';
+                document.getElementById('start_date').value = draft.start_date || '';
+                document.getElementById('duration').value = draft.duration || '';
+
+                // Clear existing additional members (keep leader)
+                const membersContainer = document.getElementById('membersContainer');
+                const additionalMembers = membersContainer.querySelectorAll('.member-item:not(.member-leader)');
+                additionalMembers.forEach(member => member.remove());
+                memberCount = 1;
+
+                // Load members data
+                if (draft.members && draft.members.length > 0) {
+                    const currentUser = '{{ Auth::user()->identity->user_id ?? Auth::user()->name }}';
+                    
+                    draft.members.forEach((member, index) => {
+                        if (member.role === 'leader') {
+                            // Update leader year field
+                            const leaderYearField = document.querySelector('input[name="members[0][year]"]');
+                            if (leaderYearField) {
+                                leaderYearField.value = member.year || '';
+                            }
+                        } else {
+                            // Add additional member
+                            addMemberWithData(member);
+                        }
+                    });
+                }
+
+                // Show file info if exists
+                if (draft.has_proposal_file) {
+                    showDraftFileInfo(draft.proposal_file_name);
+                }
+
+                // Update status badge
+                const statusBadge = document.getElementById('draftStatusBadge');
+                if (statusBadge) {
+                    statusBadge.innerHTML = '<i class="fas fa-save"></i> Draft Dimuat';
+                    statusBadge.className = 'status-badge status-loaded';
+                }
+
+                if (shouldShowNotification) {
+                    showNotification('success', 'Draft dimuat!', `Data dari ${draft.saved_at} berhasil dimuat`);
+                }
+            }
+
+            // Function to add member with data
+            function addMemberWithData(memberData) {
+                if (memberCount >= maxMembers) return;
+
+                const template = document.getElementById('memberTemplate');
+                const memberHtml = template.innerHTML
+                    .replace(/data-member-index=""/g, `data-member-index="${memberCount}"`)
+                    .replace(/members\[\]\[/g, `members[${memberCount}][`)
+                    .replace(/<span class="member-number"><\/span>/g, memberCount);
+
+                const memberDiv = document.createElement('div');
+                memberDiv.innerHTML = memberHtml;
+                const memberElement = memberDiv.firstElementChild;
+
+                // Fill the member data
+                memberElement.querySelector('input[name$="[student_id]"]').value = memberData.student_id || '';
+                memberElement.querySelector('input[name$="[name]"]').value = memberData.name || '';
+                memberElement.querySelector('input[name$="[email]"]').value = memberData.email || '';
+                memberElement.querySelector('input[name$="[year]"]').value = memberData.year || '';
+
+                document.getElementById('membersContainer').appendChild(memberElement);
+                memberCount++;
+
+                // Update button state
+                const addBtn = document.getElementById('addMemberBtn');
+                if (memberCount >= maxMembers) {
+                    addBtn.disabled = true;
+                    addBtn.innerHTML = '<i class="fas fa-users"></i> Maksimal 4 Anggota';
+                }
+            }
+
+            // Function to show draft file info
+            function showDraftFileInfo(fileName) {
+                const fileInput = document.getElementById('proposal_file');
+                const previewContainer = document.getElementById('filePreview');
+                
+                // Create info message
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'alert alert-info mt-2';
+                infoDiv.innerHTML = `
+                    <i class="fas fa-info-circle"></i>
+                    <strong>File draft tersimpan:</strong> ${fileName}
+                    <br><small>Upload file baru untuk mengganti file draft yang tersimpan</small>
+                `;
+                
+                fileInput.parentNode.appendChild(infoDiv);
+            }
 
             // Add Member functionality
             document.getElementById('addMemberBtn').addEventListener('click', function() {
@@ -564,16 +743,19 @@
                                 `Terakhir disimpan: ${data.saved_at}`);
 
                             // Update badge to show draft saved
-                            const badge = document.querySelector('.badge-gradient');
-                            badge.innerHTML = '<i class="fas fa-save"></i> Draft Tersimpan';
+                            const badge = document.getElementById('draftStatusBadge');
+                            if (badge) {
+                                badge.innerHTML = '<i class="fas fa-save"></i> Draft Tersimpan';
+                                badge.className = 'status-badge status-loaded';
+                            }
                         } else {
-                            showNotification('error', 'Gagal menyimpan draft', data.message);
+                            showNotification('error', 'Gagal menyimpan draft', data.message || 'Terjadi kesalahan');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         showNotification('error', 'Terjadi kesalahan',
-                            'Gagal menyimpan draft. Silakan coba lagi.');
+                            'Gagal menyimpan draft. Silakan coba lagi. (from catch error)');
                     })
                     .finally(() => {
                         // Restore button state

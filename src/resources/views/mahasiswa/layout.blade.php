@@ -61,28 +61,28 @@
                 </a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item d-none">
                 <a href="{{ route('mahasiswa.courses') }}"
                     class="nav-link {{ request()->routeIs('mahasiswa.courses') ? 'active' : '' }}">
                     <i class="fas fa-file"></i>
                     <span class="nav-text">Course</span>
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item d-none">
                 <a href="{{ route('mahasiswa.grades') }}"
                     class="nav-link {{ request()->routeIs('mahasiswa.grades') ? 'active' : '' }}">
                     <i class="fas fa-chart-line"></i>
                     <span class="nav-text">Grades</span>
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item d-none">
                 <a href="{{ route('mahasiswa.schedule') }}"
                     class="nav-link {{ request()->routeIs('mahasiswa.schedule') ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt"></i>
                     <span class="nav-text">Schedule</span>
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item d-none">
                 <a href="{{ route('mahasiswa.assignments') }}"
                     class="nav-link {{ request()->routeIs('mahasiswa.assignments') ? 'active' : '' }}">
                     <i class="fas fa-tasks"></i>

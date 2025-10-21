@@ -22,7 +22,154 @@ class MahasiswaController extends Controller
      */
     public function showFormalRequestForm()
     {
-        return view('mahasiswa.form_formalrequests');
+        $draft = $this->getUserDraft();
+        $businessFields = $this->getBusinessFieldsForForm();
+
+        return view('mahasiswa.form_formalrequests', [
+            'draft' => $draft,
+            'businessFields' => $businessFields
+        ]);
+    }
+
+    /**
+     * Get user's draft data
+     */
+    public function getUserDraft()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get all drafts for the current user
+            $drafts = Application::with(['members.student', 'documents'])
+                ->where('submitted_by', $user->id)
+                ->where('status', 'draft')
+                ->latest()
+                ->get();
+
+            if ($drafts->isEmpty()) {
+                return null;
+            }
+
+            // Prioritize draft with documents, otherwise use the most recent
+            $draft = $drafts->first(function ($d) {
+                return $d->documents->where('document_type', 'draft_purpose_letter')->isNotEmpty();
+            }) ?: $drafts->first();
+
+            // Format draft data for form population
+            $formattedDraft = [
+                'id' => $draft->id,
+                'topic' => $draft->notes,
+                'company' => $draft->institution_name,
+                'company_address' => $draft->institution_address,
+                'business_field' => $draft->business_field,
+                'department' => $draft->placement_division,
+                'division' => $draft->division ?: '',
+                'start_date' => $draft->planned_start_date ? $draft->planned_start_date->format('Y-m-d') : '',
+                'duration' => $draft->planned_start_date && $draft->planned_end_date
+                    ? $draft->planned_start_date->diffInMonths($draft->planned_end_date)
+                    : '',
+                'members' => [],
+                'has_proposal_file' => false,
+                'proposal_file_name' => '',
+                'saved_at' => $draft->updated_at->format('d M Y H:i')
+            ];
+
+            // Get members data
+            foreach ($draft->members as $member) {
+                $student = $member->student;
+                if ($student) {
+                    $formattedDraft['members'][] = [
+                        'student_id' => $student->nrp,
+                        'name' => $student->nama_resmi,
+                        'email' => $student->email_kampus,
+                        'year' => $student->angkatan,
+                        'role' => $member->role
+                    ];
+                }
+            }
+
+            // Check for proposal file
+            $proposalDoc = $draft->documents
+                ->where('document_type', 'draft_purpose_letter')
+                ->first();
+
+            if ($proposalDoc) {
+                $formattedDraft['has_proposal_file'] = true;
+                $formattedDraft['proposal_file_name'] = $proposalDoc->document_name;
+                $formattedDraft['proposal_file_url'] = url('storage/' . $proposalDoc->file_path);
+            }
+
+            return $formattedDraft;
+        } catch (\Exception $e) {
+            \Log::error('Error getting user draft', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Load draft data via AJAX
+     */
+    public function loadDraft()
+    {
+        try {
+            $draft = $this->getUserDraft();
+
+            return response()->json([
+                'success' => true,
+                'draft' => $draft,
+                'has_draft' => !is_null($draft)
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error loading draft via AJAX', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat draft',
+                'draft' => null,
+                'has_draft' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Get business fields for form dropdown
+     */
+    private function getBusinessFieldsForForm()
+    {
+        try {
+            $businessFields = BusinessField::active()->ordered()->get();
+
+            return $businessFields->map(function ($field) {
+                return [
+                    'code' => $field->code,
+                    'name' => $field->name,
+                    'name_en' => $field->name_en
+                ];
+            });
+        } catch (\Exception $e) {
+            // Return fallback options if database fails
+            return collect([
+                ['code' => 'technology', 'name' => 'Teknologi Informasi', 'name_en' => 'Technology'],
+                ['code' => 'finance', 'name' => 'Keuangan & Perbankan', 'name_en' => 'Finance'],
+                ['code' => 'manufacturing', 'name' => 'Manufaktur', 'name_en' => 'Manufacturing'],
+                ['code' => 'healthcare', 'name' => 'Kesehatan', 'name_en' => 'Healthcare'],
+                ['code' => 'education', 'name' => 'Pendidikan', 'name_en' => 'Education'],
+                ['code' => 'retail', 'name' => 'Retail & E-commerce', 'name_en' => 'Retail'],
+                ['code' => 'energy', 'name' => 'Energi & Pertambangan', 'name_en' => 'Energy'],
+                ['code' => 'transportation', 'name' => 'Transportasi & Logistik', 'name_en' => 'Transportation'],
+                ['code' => 'construction', 'name' => 'Konstruksi & Properti', 'name_en' => 'Construction'],
+                ['code' => 'media', 'name' => 'Media & Komunikasi', 'name_en' => 'Media'],
+                ['code' => 'government', 'name' => 'Pemerintahan', 'name_en' => 'Government'],
+                ['code' => 'other', 'name' => 'Lainnya', 'name_en' => 'Other']
+            ]);
+        }
     }
 
     /**
@@ -76,7 +223,8 @@ class MahasiswaController extends Controller
                 'institution_name' => $request->company,
                 'institution_address' => $request->company_address,
                 'business_field' => $request->business_field,
-                'placement_division' => $request->division ?: $request->department,
+                'placement_division' => $request->department,
+                'division' => $request->division,
                 'planned_start_date' => $request->start_date,
                 'planned_end_date' => $endDate,
                 'notes' => $request->topic,
@@ -122,7 +270,7 @@ class MahasiswaController extends Controller
 
                 // Find or create student by NRP
                 $student = Student::where('nrp', $memberData['student_id'])->first();
-                
+
                 if (!$student) {
                     // Create temporary student record if not exists
                     // In production, you might want to validate this differently
@@ -164,10 +312,9 @@ class MahasiswaController extends Controller
                 ->route('mahasiswa.formal-requests')
                 ->with('success', "Aplikasi magang berhasil disubmit! ID Aplikasi: APP-{$application->id}")
                 ->with('application_id', $application->id);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             \Log::error('Error submitting application', [
                 'error' => $e->getMessage(),
                 'user_id' => Auth::id(),
@@ -197,10 +344,16 @@ class MahasiswaController extends Controller
                 ], 422);
             }
 
-            // Check if user already has a draft
-            $existingDraft = Application::where('submitted_by', Auth::id())
+            // Check if user already has drafts (prioritize one with documents)
+            $allDrafts = Application::with('documents')
+                ->where('submitted_by', Auth::id())
                 ->where('status', 'draft')
-                ->first();
+                ->latest()
+                ->get();
+
+            $existingDraft = $allDrafts->first(function ($d) {
+                return $d->documents->where('document_type', 'draft_purpose_letter')->isNotEmpty();
+            }) ?: $allDrafts->first();
 
             $endDate = null;
             if ($request->start_date && $request->duration) {
@@ -214,12 +367,13 @@ class MahasiswaController extends Controller
                     'institution_name' => $request->company ?: $existingDraft->institution_name,
                     'institution_address' => $request->company_address ?: $existingDraft->institution_address,
                     'business_field' => $request->business_field ?: $existingDraft->business_field,
-                    'placement_division' => $request->division ?: $request->department ?: $existingDraft->placement_division,
+                    'placement_division' => $request->department ?: $existingDraft->placement_division,
+                    'division' => $request->division ?: $existingDraft->division,
                     'planned_start_date' => $request->start_date ?: $existingDraft->planned_start_date,
                     'planned_end_date' => $endDate ?: $existingDraft->planned_end_date,
                     'notes' => $request->topic ?: $existingDraft->notes,
                 ]);
-                
+
                 $application = $existingDraft;
             } else {
                 // Create new draft
@@ -227,15 +381,14 @@ class MahasiswaController extends Controller
                     'institution_name' => $request->company ?: 'Draft Company',
                     'institution_address' => $request->company_address ?: '',
                     'business_field' => $request->business_field ?: 'other',
-                    'placement_division' => $request->division ?: $request->department ?: 'Draft Division',
+                    'placement_division' => $request->department ?: 'Draft Department',
+                    'division' => $request->division ?: '',
                     'planned_start_date' => $request->start_date ?: now()->addMonth(),
                     'planned_end_date' => $endDate ?: now()->addMonths(6),
                     'notes' => $request->topic ?: 'Draft proposal',
                     'status' => 'draft',
                     'submitted_by' => Auth::id(),
-                ]);
-
-                // Add current user as leader
+                ]);                // Add current user as leader
                 ApplicationMember::create([
                     'application_id' => $application->id,
                     'student_id' => $currentStudent->id,
@@ -247,11 +400,11 @@ class MahasiswaController extends Controller
 
             // Handle file upload for draft if exists
             if ($request->hasFile('proposal_file')) {
-                // Delete old draft file if exists
-                $oldDocument = $application->documents()
+                // Delete old draft file if exists  
+                $oldDocument = ApplicationDocument::where('application_id', $application->id)
                     ->where('document_type', 'draft_purpose_letter')
                     ->first();
-                
+
                 if ($oldDocument) {
                     if (Storage::disk('public')->exists($oldDocument->file_path)) {
                         Storage::disk('public')->delete($oldDocument->file_path);
@@ -277,6 +430,24 @@ class MahasiswaController extends Controller
                 ]);
             }
 
+            // Clean up duplicate drafts (keep only the current one)
+            if ($allDrafts->count() > 1) {
+                $draftsToDelete = $allDrafts->where('id', '!=', $application->id);
+                foreach ($draftsToDelete as $draftToDelete) {
+                    // Delete documents of duplicate drafts
+                    foreach ($draftToDelete->documents as $doc) {
+                        if (Storage::disk('public')->exists($doc->file_path)) {
+                            Storage::disk('public')->delete($doc->file_path);
+                        }
+                        $doc->delete();
+                    }
+                    // Delete members of duplicate drafts
+                    $draftToDelete->members()->delete();
+                    // Delete the draft application
+                    $draftToDelete->delete();
+                }
+            }
+
             DB::commit();
 
             return response()->json([
@@ -286,10 +457,9 @@ class MahasiswaController extends Controller
                 'application_id' => 'DRAFT-' . $application->id,
                 'saved_at' => $application->updated_at->format('d M Y H:i')
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             \Log::error('Error saving draft', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
@@ -309,7 +479,7 @@ class MahasiswaController extends Controller
     {
         try {
             $user = Auth::user();
-            
+
             // Get applications where user is the submitter or a member
             $applications = Application::with([
                 'members.student.user',
@@ -317,9 +487,9 @@ class MahasiswaController extends Controller
                 'submittedBy',
                 'reviewedBy'
             ])
-            ->where('submitted_by', $user->id)
-            ->latest()
-            ->get();
+                ->where('submitted_by', $user->id)
+                ->latest()
+                ->get();
 
             // Format applications data
             $formattedApplications = $applications->map(function ($application) {
@@ -356,7 +526,7 @@ class MahasiswaController extends Controller
                     'company_address' => $application->institution_address,
                     'business_field' => $application->business_field,
                     'department' => $application->placement_division,
-                    'division' => $application->placement_division,
+                    'division' => $application->division,
                     'start_date' => $application->planned_start_date->format('Y-m-d'),
                     'end_date' => $application->planned_end_date->format('Y-m-d'),
                     'duration' => $application->getDurationInDays(),
@@ -377,7 +547,7 @@ class MahasiswaController extends Controller
 
             // Get draft data (still from session for now)
             $draft = session('proposal_draft');
-            
+
             return response()->json([
                 'success' => true,
                 'applications' => $formattedApplications,
@@ -385,7 +555,6 @@ class MahasiswaController extends Controller
                 'draft' => $draft,
                 'total' => $formattedApplications->count()
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Error fetching applications', [
                 'user_id' => Auth::id(),
@@ -418,10 +587,10 @@ class MahasiswaController extends Controller
             }
 
             // Check if user owns this application or is a member
-            $userCanAccess = $application->submitted_by === Auth::id() || 
-                            $application->members()->whereHas('student', function($q) {
-                                $q->where('user_id', Auth::id());
-                            })->exists();
+            $userCanAccess = $application->submitted_by === Auth::id() ||
+                $application->members()->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
@@ -444,7 +613,6 @@ class MahasiswaController extends Controller
                 $document->file_path,
                 'Proposal_' . Str::slug($application->institution_name) . '_APP-' . $application->id . '.pdf'
             );
-
         } catch (\Exception $e) {
             \Log::error('Error downloading application document', [
                 'application_id' => $applicationId,
@@ -472,10 +640,10 @@ class MahasiswaController extends Controller
             }
 
             // Check if user owns this application or is a member
-            $userCanAccess = $application->submitted_by === Auth::id() || 
-                            $application->members()->whereHas('student', function($q) {
-                                $q->where('user_id', Auth::id());
-                            })->exists();
+            $userCanAccess = $application->submitted_by === Auth::id() ||
+                $application->members()->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
@@ -495,19 +663,18 @@ class MahasiswaController extends Controller
             }
 
             $filePath = Storage::disk('public')->path($document->file_path);
-            
+
             return response()->file($filePath, [
                 'Content-Type' => $document->mime_type ?: 'application/pdf',
                 'Content-Disposition' => 'inline; filename="' . $document->document_name . '"'
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Error previewing application document', [
                 'application_id' => $applicationId,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
-            
+
             abort(404, 'File tidak dapat ditampilkan');
         }
     }
@@ -564,10 +731,9 @@ class MahasiswaController extends Controller
                 'success' => true,
                 'message' => 'Aplikasi berhasil dihapus'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             \Log::error('Error deleting application', [
                 'application_id' => $applicationId,
                 'user_id' => Auth::id(),
@@ -589,19 +755,19 @@ class MahasiswaController extends Controller
         try {
             // Get active business fields from database
             $businessFields = BusinessField::active()
-                                          ->ordered()
-                                          ->get()
-                                          ->map(function ($field) {
-                                              return [
-                                                  'code' => $field->code,
-                                                  'name' => $field->name,
-                                                  'name_en' => $field->name_en,
-                                                  'description' => $field->description,
-                                                  'icon' => $field->display_icon,
-                                                  'color' => $field->display_color,
-                                                  'metadata' => $field->metadata
-                                              ];
-                                          });
+                ->ordered()
+                ->get()
+                ->map(function ($field) {
+                    return [
+                        'code' => $field->code,
+                        'name' => $field->name,
+                        'name_en' => $field->name_en,
+                        'description' => $field->description,
+                        'icon' => $field->display_icon,
+                        'color' => $field->display_color,
+                        'metadata' => $field->metadata
+                    ];
+                });
 
             // For backward compatibility, also return simple key-value pairs
             $simpleFields = BusinessField::getSelectOptions();
@@ -612,7 +778,6 @@ class MahasiswaController extends Controller
                 'simple' => $simpleFields, // For simple select dropdowns
                 'total' => $businessFields->count()
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Error fetching business fields', [
                 'error' => $e->getMessage()
@@ -658,7 +823,7 @@ class MahasiswaController extends Controller
         $user = Auth::user();
         $activeSignature = $user->activeSignature;
         $allSignatures = $user->signatures()->latest()->get();
-        
+
         return view('mahasiswa.signature', [
             'activeSignature' => $activeSignature,
             'allSignatures' => $allSignatures
@@ -687,7 +852,7 @@ class MahasiswaController extends Controller
 
             $user = Auth::user();
             $signatureData = $request->signature_data;
-            
+
             // Validate base64 image
             if (!preg_match('/^data:image\/(png|jpeg|jpg);base64,/', $signatureData)) {
                 return response()->json([
@@ -699,7 +864,7 @@ class MahasiswaController extends Controller
             // Extract base64 data
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $signatureData);
             $imageData = base64_decode($imageData);
-            
+
             if ($imageData === false) {
                 return response()->json([
                     'success' => false,
@@ -710,13 +875,13 @@ class MahasiswaController extends Controller
             // Generate filename
             $filename = 'signature_' . $user->id . '_' . time() . '.png';
             $path = 'user_signatures/' . $filename;
-            
+
             // Save file to storage
             Storage::disk('public')->put($path, $imageData);
-            
+
             // Deactivate previous signatures
             UserSignature::where('user_id', $user->id)->update(['is_active' => false]);
-            
+
             // Create new signature record
             $signature = UserSignature::create([
                 'user_id' => $user->id,
@@ -740,7 +905,6 @@ class MahasiswaController extends Controller
                     'file_size' => $signature->formatted_file_size
                 ]
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Error saving signature', [
                 'user_id' => Auth::id(),
@@ -762,7 +926,7 @@ class MahasiswaController extends Controller
         try {
             $user = Auth::user();
             $signatures = $user->signatures()->latest()->get();
-            
+
             $formattedSignatures = $signatures->map(function ($signature) {
                 return [
                     'id' => $signature->id,
@@ -780,7 +944,6 @@ class MahasiswaController extends Controller
                 'signatures' => $formattedSignatures,
                 'total' => $signatures->count()
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -818,7 +981,6 @@ class MahasiswaController extends Controller
                 'success' => true,
                 'message' => 'Signature berhasil dihapus'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -834,7 +996,7 @@ class MahasiswaController extends Controller
     {
         try {
             $user = Auth::user();
-            
+
             // Check if signature belongs to user
             $signature = UserSignature::where('id', $signatureId)
                 ->where('user_id', $user->id)
@@ -849,7 +1011,7 @@ class MahasiswaController extends Controller
 
             // Deactivate all signatures
             UserSignature::where('user_id', $user->id)->update(['is_active' => false]);
-            
+
             // Activate selected signature
             $signature->update(['is_active' => true]);
 
@@ -857,7 +1019,6 @@ class MahasiswaController extends Controller
                 'success' => true,
                 'message' => 'Signature aktif berhasil diubah'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -888,7 +1049,6 @@ class MahasiswaController extends Controller
                 $signature->signature_path,
                 'signature_' . Auth::user()->name . '_' . $signature->id . '.png'
             );
-
         } catch (\Exception $e) {
             \Log::error('Error downloading signature', [
                 'signature_id' => $signatureId,

@@ -20,6 +20,7 @@ class Application extends Model
         'institution_address',
         'business_field',
         'placement_division',
+        'division',
         'planned_start_date',
         'planned_end_date',
         'purpose_letter_path',
@@ -68,8 +69,8 @@ class Application extends Model
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, 'application_members')
-                    ->withPivot(['role', 'notes', 'joined_at'])
-                    ->withTimestamps();
+            ->withPivot(['role', 'notes', 'joined_at'])
+            ->withTimestamps();
     }
 
     /**
@@ -111,8 +112,8 @@ class Application extends Model
     public function allRequiredDocumentsVerified(): bool
     {
         $requiredDocs = $this->documents()->where('is_required', true);
-        return $requiredDocs->count() > 0 && 
-               $requiredDocs->where('is_verified', true)->count() === $requiredDocs->count();
+        return $requiredDocs->count() > 0 &&
+            $requiredDocs->where('is_verified', true)->count() === $requiredDocs->count();
     }
 
     /**
@@ -168,7 +169,7 @@ class Application extends Model
      */
     public function getStatusBadgeClass(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'draft' => 'badge-secondary',
             'submitted' => 'badge-warning',
             'reviewing' => 'badge-info',
@@ -183,7 +184,7 @@ class Application extends Model
      */
     public function getStatusDisplayText(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'draft' => 'Draft',
             'submitted' => 'Diajukan',
             'reviewing' => 'Dalam Review',

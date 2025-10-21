@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div class="assignment-status">
-                    <div class="status-badge status-pending">Mr. XXX (Dosen Pembimbing)</div>
+                    <div class="status-badge status-draft">Mr. XXX (Dosen Pembimbing)</div>
                     <div class="due-date">12 Agustus 2025</div>
                 </div>
             </div>
@@ -68,7 +68,7 @@
                     </div>
                 </div>
                 <div class="assignment-status">
-                    <div class="status-badge status-pending">Mr. XXX (Dosen Pembimbing)</div>
+                    <div class="status-badge status-draft">Mr. XXX (Dosen Pembimbing)</div>
                     <div class="due-date">12 Agustus 2025</div>
                 </div>
             </div>
@@ -143,7 +143,7 @@
                             <div class="d-flex align-items-center mb-2">
                                 <img src="{{ asset('icons/checker.svg') }}" alt="Checker" class="me-2"
                                     style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(35%) sepia(85%) saturate(2578%) hue-rotate(100deg) brightness(97%) contrast(86%);">
-                                <span>12/12 SKS</span>
+                                <span>90/90 SKS</span>
                             </div>
                             <div class="d-flex align-items-center">
                                 <img src="{{ asset('icons/checker-gray.svg') }}" alt="Cancel" class="me-2"
@@ -208,7 +208,7 @@
                             <div class="d-flex align-items-center mb-2">
                                 <img src="{{ asset('icons/checker.svg') }}" alt="Checker" class="me-2"
                                     style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(35%) sepia(85%) saturate(2578%) hue-rotate(100deg) brightness(97%) contrast(86%);">
-                                <span>12/12 SKS</span>
+                                <span>102/90 SKS</span>
                             </div>
                             <div class="d-flex align-items-center">
                                 <img src="{{ asset('icons/checker.svg') }}" alt="Checker" class="me-2"
