@@ -1,0 +1,283 @@
+{
+	"info": {
+		"_postman_id": "18271781-91d63065-416d-4dfd-b0c9-ae5ffb5b63a2",
+		"name": "#magang",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "user auth",
+			"item": [
+				{
+					"name": "login & refresh token",
+					"id": "18271781-1e22d7d5-5a30-49d5-ab80-dfd53eee15da",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "eko.prasetyo@student.its.ac.id",
+									"type": "text",
+									"uuid": "4e0a19ca-85d0-4e8e-a7fb-dc2c8703cab9"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"type": "text",
+									"uuid": "a7b3f124-7bb0-4f33-b1db-9a632ddea149"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local-api}}login",
+							"host": [
+								"{{local-api}}login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "logout & delete token",
+					"id": "18271781-f548f483-ca05-49a1-9a71-187778a11b53",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "eko.prasetyo@student.its.ac.id",
+									"type": "text",
+									"uuid": "4e0a19ca-85d0-4e8e-a7fb-dc2c8703cab9"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"type": "text",
+									"uuid": "a7b3f124-7bb0-4f33-b1db-9a632ddea149"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local-api}}logout",
+							"host": [
+								"{{local-api}}logout"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "18271781-286e8406-6435-4a62-b24f-72a34e239b35"
+		},
+		{
+			"name": "signature",
+			"item": [
+				{
+					"name": "saveSignature",
+					"id": "18271781-9725ada2-921c-4bb8-839e-f84485871e14",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"signature_data\": \"<string>\", \"purpose\": \"<string>\", \"notes\": \"<string>\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local-api}}mahasiswa/signature",
+							"host": [
+								"{{local-api}}mahasiswa"
+							],
+							"path": [
+								"signature"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getUserSignatures",
+					"id": "18271781-0f749f5d-0084-467c-92a2-8dd875de22d6",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local-api}}signatures",
+							"host": [
+								"{{local-api}}signatures"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteSignature",
+					"id": "18271781-cf7ae26f-82fc-4136-8b62-4d5149c28b6a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{local-api}}signature/1",
+							"host": [
+								"{{local-api}}signature"
+							],
+							"path": [
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "setActiveSignature",
+					"id": "18271781-74c8d08c-7f3e-43c0-a150-fac085a5d03c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{local-api}}signature/1/set-active",
+							"host": [
+								"{{local-api}}signature"
+							],
+							"path": [
+								"1",
+								"set-active"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "downloadSignature",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "f404c847-d4a6-4aa0-8815-323493577489",
+								"exec": [
+									"// This request saves a new signature for the user. Required: signature_data (string). Optional: purpose (string, max 100), notes (string, max 500)."
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "18271781-7ec88ec6-f051-4852-97df-e9f5ee77d43b",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local-api}}signatures/1/download",
+							"host": [
+								"{{local-api}}signatures"
+							],
+							"path": [
+								"1",
+								"download"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "18271781-3e5d89a7-4c3e-4eb9-93ea-fbb046b803eb"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "20|beU7dQURPynKVjngF4yMxy2D7Za01QwtHculG0wbcf61d370",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "9c2f5fa4-03bb-4e2a-8356-0f243640a433",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "a0e1b13a-0269-4458-97ba-7707524a6267",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "local",
+			"value": ""
+		},
+		{
+			"key": "local-api",
+			"value": ""
+		}
+	]
+}
