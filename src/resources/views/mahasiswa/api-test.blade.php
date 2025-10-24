@@ -179,7 +179,7 @@
         function testGetProposals() {
             showLoading();
 
-            fetch('{{ route('mahasiswa.get-proposals') }}', {
+            fetch('{{ route('mahasiswa.getProposals') }}', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

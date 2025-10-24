@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -273,6 +274,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <div>
@@ -283,7 +285,7 @@
         </div>
         <div class="user-info">
             <span class="user-name">{{ Auth::user()->name }}</span>
-            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+            <form method="POST" action="{{ route('logout.post') }}" style="display: inline;">
                 @csrf
                 <button type="submit" class="logout-btn">Logout</button>
             </form>
@@ -496,10 +498,12 @@
                 <h3>📊 Analytics & Reporting</h3>
                 <div class="chart-placeholder">
                     <p>📊 Interactive Charts & Reports</p>
-                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">Detailed analytics dashboard would be integrated here</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">Detailed analytics dashboard would be integrated
+                        here</p>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>

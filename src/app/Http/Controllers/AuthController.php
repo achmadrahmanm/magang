@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
@@ -32,11 +35,32 @@ class AuthController extends Controller
 
         $login = $request->email;
         $password = $request->password;
-        $remember = $request->boolean('remember');
 
         // Determine if login is email or username
         $fieldType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
+        // If request is API (prefixed with api/) or expects JSON, return token-based response
+        if ($request->is('api/*') || $request->expectsJson()) {
+            $user = User::where($fieldType, $login)->first();
+
+            if (! $user || ! Hash::check($password, $user->password)) {
+                return response()->json([
+                    'message' => 'The provided credentials do not match our records.'
+                ], 422);
+            }
+
+            // Create personal access token
+            $token = $user->createToken('api-token')->plainTextToken;
+
+            return response()->json([
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user,
+            ]);
+        }
+
+        // Web / session based login (unchanged)
+        $remember = $request->boolean('remember');
         $credentials = [
             $fieldType => $login,
             'password' => $password
@@ -57,11 +81,64 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // If API request using sanctum token, revoke current token
+        if ($request->is('api/*') || $request->expectsJson()) {
+            $user = $request->user();
+            if ($user && $user->currentAccessToken()) {
+                $user->currentAccessToken()->delete();
+            }
+
+            return response()->json(['message' => 'Logged out']);
+        }
+
+        // Web logout
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()->route('welcome');
+    }
+
+    /**
+     * Handle register request
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->input('role', 'mahasiswa'),
+        ]);
+
+        if ($request->is('api/*') || $request->expectsJson()) {
+            $token = $user->createToken('api-token')->plainTextToken;
+            return response()->json(['user' => $user, 'token' => $token, 'token_type' => 'Bearer'], 201);
+        }
+
+        // For web flows, log the user in and redirect
+        Auth::login($user);
+        return redirect()->route('dashboard');
+    }
+
+    /**
+     * Return authenticated user
+     */
+    public function user(Request $request)
+    {
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json($request->user());
+        }
+
+        return redirect()->route('dashboard');
     }
 
     /**

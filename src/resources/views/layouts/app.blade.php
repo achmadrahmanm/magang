@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <title>@yield('title', 'Management Mahasiswa - ' . config('app.name', 'Laravel'))</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=poppins:400,500,600,700" rel="stylesheet" />
-    
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=poppins:400,500,600,700"
+        rel="stylesheet" />
+
     <!-- Base Styles -->
     <style>
         * {
@@ -169,7 +171,8 @@
 
         /* Main Content */
         .main-content {
-            padding-top: 80px; /* Account for fixed header */
+            padding-top: 80px;
+            /* Account for fixed header */
             min-height: calc(100vh - 80px);
         }
 
@@ -310,6 +313,7 @@
 
     @stack('styles')
 </head>
+
 <body>
     <!-- Header -->
     <header class="header">
@@ -319,13 +323,13 @@
                     <div class="logo-icon" style="font-size: 1rem"> MM </div>
                     <span>Management Mahasiswa</span>
                 </a>
-                
+
                 <div class="nav-links">
                     <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a>
                     <a href="#features" class="nav-link">Features</a>
                     <a href="#about" class="nav-link">About</a>
                     <a href="#contact" class="nav-link">Contact</a>
-                    
+
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}" class="btn-primary">Dashboard</a>
@@ -375,7 +379,8 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Student Management System</h3>
-                    <p>Solusi terdepan untuk manajemen mahasiswa yang efisien dan modern. Membantu institusi pendidikan mengelola data mahasiswa dengan mudah dan aman.</p>
+                    <p>Solusi terdepan untuk manajemen mahasiswa yang efisien dan modern. Membantu institusi pendidikan
+                        mengelola data mahasiswa dengan mudah dan aman.</p>
                     <div class="social-links">
                         <a href="#" class="social-link">📘</a>
                         <a href="#" class="social-link">📸</a>
@@ -383,7 +388,7 @@
                         <a href="#" class="social-link">💼</a>
                     </div>
                 </div>
-                
+
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <a href="#" class="footer-link">Dashboard</a>
@@ -391,7 +396,7 @@
                     <a href="#" class="footer-link">Course Management</a>
                     <a href="#" class="footer-link">Grade Reports</a>
                 </div>
-                
+
                 <div class="footer-section">
                     <h3>Support</h3>
                     <a href="#" class="footer-link">Help Center</a>
@@ -399,7 +404,7 @@
                     <a href="#" class="footer-link">API Reference</a>
                     <a href="#" class="footer-link">Contact Support</a>
                 </div>
-                
+
                 <div class="footer-section">
                     <h3>Contact Info</h3>
                     <p>📍 Jakarta, Indonesia</p>
@@ -408,7 +413,7 @@
                     <p>🕒 Mon - Fri: 9AM - 5PM</p>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <p>&copy; 2025 Student Management System. All rights reserved.</p>
                 <div class="footer-legal">
@@ -430,7 +435,7 @@
         document.addEventListener('click', function(event) {
             const mobileNav = document.getElementById('mobileNav');
             const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-            
+
             if (!mobileNav.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
                 mobileNav.classList.remove('active');
             }
@@ -438,7 +443,7 @@
 
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
@@ -451,6 +456,78 @@
         });
     </script>
 
+    <!-- Global API helper: automatically attach Bearer token from localStorage to /api requests -->
+    <script>
+        (function() {
+            // Read token from localStorage
+            function getToken() {
+                try {
+                    return localStorage.getItem('api_token');
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // Wrap fetch to auto-add Authorization header for API calls
+            if (window.fetch) {
+                const _fetch = window.fetch.bind(window);
+                window.fetch = function(input, init) {
+                    try {
+                        const token = getToken();
+                        let url = (typeof input === 'string') ? input : input.url || '';
+                        // If relative path like /api/... ensure match
+                        if (url.startsWith('/') && url.indexOf('/api/') === 0 || url.indexOf('/api/') !== -1) {
+                            init = init || {};
+                            init.headers = init.headers || {};
+                            // If Headers instance, use set
+                            if (init.headers instanceof Headers) {
+                                if (token) init.headers.set('Authorization', 'Bearer ' + token);
+                            } else if (Array.isArray(init.headers)) {
+                                if (token) init.headers.push(['Authorization', 'Bearer ' + token]);
+                            } else {
+                                if (token && !init.headers['Authorization']) init.headers['Authorization'] =
+                                    'Bearer ' + token;
+                            }
+                        }
+                    } catch (e) {
+                        /* ignore */ }
+                    return _fetch(input, init);
+                };
+            }
+
+            // If axios is used, set default Authorization header
+            if (window.axios) {
+                try {
+                    const t = getToken();
+                    if (t) window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + t;
+                } catch (e) {}
+            }
+
+            // Monkeypatch XHR send to attach header for legacy code
+            (function() {
+                const XHR = window.XMLHttpRequest;
+                if (!XHR) return;
+                const openProto = XHR.prototype.open;
+                XHR.prototype.open = function(method, url) {
+                    this._url = url;
+                    return openProto.apply(this, arguments);
+                };
+
+                const sendProto = XHR.prototype.send;
+                XHR.prototype.send = function(body) {
+                    try {
+                        const token = getToken();
+                        if (token && this._url && this._url.indexOf('/api/') !== -1) {
+                            this.setRequestHeader('Authorization', 'Bearer ' + token);
+                        }
+                    } catch (e) {}
+                    return sendProto.apply(this, arguments);
+                };
+            })();
+        })();
+    </script>
+
     @stack('scripts')
 </body>
+
 </html>

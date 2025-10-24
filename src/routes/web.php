@@ -12,18 +12,15 @@ Route::get('/test', function () {
     return phpinfo();
 });
 
-// Authentication routes (with middleware protection)
+// Authentication routes (web only)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
 });
-
-// Logout routes (protected from guests)
 Route::middleware('logout.guard')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout.post');
 });
 
 // Protected routes
@@ -45,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/settings', [AuthController::class, 'mahasiswaSettings'])->name('mahasiswa.settings');
     Route::get('/mahasiswa/profile', [AuthController::class, 'mahasiswaProfile'])->name('mahasiswa.profile');
 
-    // Mahasiswa Application routes (formerly Proposal routes)
+     // Mahasiswa Application routes (formerly Proposal routes)
     Route::post('/mahasiswa/store-proposal', [MahasiswaController::class, 'storeProposal'])->name('mahasiswa.store-proposal');
     Route::post('/mahasiswa/save-draft', [MahasiswaController::class, 'saveDraft'])->name('mahasiswa.save-draft');
     Route::get('/mahasiswa/load-draft', [MahasiswaController::class, 'loadDraft'])->name('mahasiswa.load-draft');
@@ -69,8 +66,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/mahasiswa/signature/{signatureId}/set-active', [MahasiswaController::class, 'setActiveSignature'])->name('mahasiswa.set-active-signature');
     Route::get('/mahasiswa/signature/{signatureId}/download', [MahasiswaController::class, 'downloadSignature'])->name('mahasiswa.download-signature');
 
-    // API Test page (development only)
-    Route::get('/mahasiswa/api-test', function () {
-        return view('mahasiswa.api-test');
-    })->name('mahasiswa.api-test');
+
 });

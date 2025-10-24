@@ -23,20 +23,21 @@
                         <div class="col-md-4 text-end">
                             <div class="assignment-status">
                                 <div class="status-badge status-draft" id="draftStatusBadge">
-                                    @if($draft)
+                                    @if ($draft)
                                         <i class="fas fa-save"></i> Draft Tersimpan
                                     @else
                                         Draft
                                     @endif
                                 </div>
-                                @if($draft)
+                                @if ($draft)
                                     <div class="draft-info mt-2">
                                         <small class="text-muted">
-                                            <i class="fas fa-clock"></i> 
+                                            <i class="fas fa-clock"></i>
                                             Terakhir disimpan: {{ $draft['saved_at'] }}
                                         </small>
                                         <br>
-                                        <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="loadDraftBtn">
+                                        <button type="button" class="btn btn-sm btn-outline-primary mt-1"
+                                            id="loadDraftBtn">
                                             <i class="fas fa-download"></i> Muat Draft
                                         </button>
                                     </div>
@@ -131,8 +132,8 @@
                                 <select class="form-control form-control-modern" id="business_field" name="business_field"
                                     required>
                                     <option value="">Pilih Bidang Usaha</option>
-                                    @if(isset($businessFields) && $businessFields->count() > 0)
-                                        @foreach($businessFields as $field)
+                                    @if (isset($businessFields) && $businessFields->count() > 0)
+                                        @foreach ($businessFields as $field)
                                             <option value="{{ $field['code'] }}">{{ $field['name'] }}</option>
                                         @endforeach
                                     @else
@@ -468,9 +469,17 @@
         }
 
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.8; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         @media (max-width: 768px) {
@@ -494,7 +503,7 @@
             const maxMembers = 4;
 
             // Load draft data if exists
-            @if($draft)
+            @if ($draft)
                 loadDraftData(@json($draft), false);
             @endif
 
@@ -515,7 +524,8 @@
                     .then(data => {
                         if (data.success && data.has_draft) {
                             loadDraftData(data.draft);
-                            showNotification('success', 'Draft berhasil dimuat!', 'Data draft telah diisi ke formulir');
+                            showNotification('success', 'Draft berhasil dimuat!',
+                                'Data draft telah diisi ke formulir');
                         } else {
                             showNotification('info', 'Tidak ada draft', 'Belum ada draft yang tersimpan');
                         }
@@ -553,11 +563,12 @@
                 // Load members data
                 if (draft.members && draft.members.length > 0) {
                     const currentUser = '{{ Auth::user()->identity->user_id ?? Auth::user()->name }}';
-                    
+
                     draft.members.forEach((member, index) => {
                         if (member.role === 'leader') {
                             // Update leader year field
-                            const leaderYearField = document.querySelector('input[name="members[0][year]"]');
+                            const leaderYearField = document.querySelector(
+                            'input[name="members[0][year]"]');
                             if (leaderYearField) {
                                 leaderYearField.value = member.year || '';
                             }
@@ -620,7 +631,7 @@
             function showDraftFileInfo(fileName) {
                 const fileInput = document.getElementById('proposal_file');
                 const previewContainer = document.getElementById('filePreview');
-                
+
                 // Create info message
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'alert alert-info mt-2';
@@ -629,7 +640,7 @@
                     <strong>File draft tersimpan:</strong> ${fileName}
                     <br><small>Upload file baru untuk mengganti file draft yang tersimpan</small>
                 `;
-                
+
                 fileInput.parentNode.appendChild(infoDiv);
             }
 
@@ -749,7 +760,8 @@
                                 badge.className = 'status-badge status-loaded';
                             }
                         } else {
-                            showNotification('error', 'Gagal menyimpan draft', data.message || 'Terjadi kesalahan');
+                            showNotification('error', 'Gagal menyimpan draft', data.message ||
+                                'Terjadi kesalahan');
                         }
                     })
                     .catch(error => {

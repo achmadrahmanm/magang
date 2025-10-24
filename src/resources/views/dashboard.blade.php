@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -195,12 +196,13 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>Dashboard</h1>
         <div class="user-info">
             <span class="user-name">Welcome, {{ Auth::user()->name }}!</span>
-            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+            <form method="POST" action="{{ route('logout.post') }}" style="display: inline;">
                 @csrf
                 <button type="submit" class="logout-btn">Logout</button>
             </form>
@@ -269,4 +271,5 @@
         </div>
     </div>
 </body>
+
 </html>
