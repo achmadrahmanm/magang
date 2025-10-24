@@ -240,7 +240,7 @@
 					"name": "proposal magang",
 					"item": [
 						{
-							"name": "New Request",
+							"name": "getProposals",
 							"id": "18271781-62e93d9d-3887-4696-bf1b-602fb991a4d1",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
