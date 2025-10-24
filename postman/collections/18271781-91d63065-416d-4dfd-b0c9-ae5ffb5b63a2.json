@@ -237,8 +237,21 @@
 			"name": "mahasiswa",
 			"item": [
 				{
-					"name": "New Folder",
-					"item": [],
+					"name": "proposal magang",
+					"item": [
+						{
+							"name": "New Request",
+							"id": "18271781-62e93d9d-3887-4696-bf1b-602fb991a4d1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						}
+					],
 					"id": "18271781-9fa43163-13fc-44ec-a753-b762baf63127"
 				}
 			],
