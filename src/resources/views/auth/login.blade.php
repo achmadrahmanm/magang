@@ -235,18 +235,16 @@
                 <p>Please sign in to your account</p> --}}
             </div>
 
-            <form id="login-form" method="POST" action="{{ route('api.login') }}">
+            <form method="POST" action="{{ route('login') }}">
                 @csrf
 
                 <div class="form-group">
                     <label for="email">Email or Username</label>
                     <input type="text" id="email" name="email" class="form-control" value="{{ old('email') }}"
                         placeholder="Enter your email or username" required autofocus>
-                    <span id="email-error" class="error-message">
-                        @error('email')
-                            {{ $message }}
-                        @enderror
-                    </span>
+                    @error('email')
+                        <span class="error-message">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -258,11 +256,9 @@
                             <span id="password-icon">🔒</span>
                         </button>
                     </div>
-                    <span id="password-error" class="error-message">
-                        @error('password')
-                            {{ $message }}
-                        @enderror
-                    </span>
+                    @error('password')
+                        <span class="error-message">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="remember-me">
@@ -273,8 +269,6 @@
                 <button type="submit" class="login-btn mb-3">
                     Login
                 </button>
-
-                <div id="general-error" style="margin-top:0.75rem; text-align:center; color:#dc3545"></div>
 
                 {{-- <p style="color: #667eea; text-decoration: underline; text-align: center; font-size: 0.9rem; margin-top:5px;"><a href="#" >Forgot your password?</a></p> --}}
                 <p class="signup-link" style="margin-top:10px">Forgot your password? <a href="#">Reset here</a>
@@ -409,163 +403,6 @@
                     this.parentNode.parentNode.style.transform = 'scale(1)';
                 });
             });
-
-            // AJAX login handler: submit to API, store token and redirect based on role
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) {
-                loginForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    clearErrors();
-
-                    const email = document.getElementById('email').value.trim();
-                    const password = document.getElementById('password').value;
-                    const remember = document.getElementById('remember').checked;
-
-                    try {
-                        const res = await fetch(this.action, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                email,
-                                password,
-                                remember
-                            })
-                        });
-
-                        if (res.ok) {
-                            const data = await res.json();
-                            // store token for API calls
-                            try {
-                                localStorage.setItem('api_token', data.token);
-                            } catch (err) {
-                                /* ignore */
-                            }
-
-                            const role = data.user && data.user.role ? data.user.role : null;
-                            let path = '/dashboard';
-                            switch (role) {
-                                case 'sysadmin':
-                                    path = '/dashboard/sysadmin';
-                                    break;
-                                case 'mahasiswa':
-                                    path = '/dashboard/mahasiswa';
-                                    break;
-                                case 'dosen':
-                                    path = '/dashboard/dosen';
-                                    break;
-                                case 'management':
-                                    path = '/dashboard/management';
-                                    break;
-                                default:
-                                    path = '/dashboard';
-                            }
-
-                            // Try to create a server session by POSTing to the web /login endpoint (will set laravel-session cookie)
-                            try {
-                                const tokenInput = document.querySelector('input[name="_token"]');
-                                const csrf = tokenInput ? tokenInput.value : document.querySelector(
-                                    'meta[name="csrf-token"]')?.getAttribute('content');
-
-                                // Attempt a same-origin fetch so browser accepts Set-Cookie
-                                await fetch('/login', {
-                                    method: 'POST',
-                                    credentials: 'same-origin',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': csrf || ''
-                                    },
-                                    body: JSON.stringify({
-                                        email,
-                                        password,
-                                        remember
-                                    })
-                                });
-
-                                // Navigate to dashboard (server will now recognize session)
-                                window.location.href = path;
-                                return;
-                            } catch (err) {
-                                try {
-                                    // Fallback: submit hidden form which also establishes session
-                                    const f = document.createElement('form');
-                                    f.method = 'POST';
-                                    f.action = '/login';
-                                    f.style.display = 'none';
-
-                                    const iCsrf = document.createElement('input');
-                                    iCsrf.type = 'hidden';
-                                    iCsrf.name = '_token';
-                                    iCsrf.value = document.querySelector('input[name="_token"]')
-                                        ?.value || '';
-                                    f.appendChild(iCsrf);
-
-                                    const iEmail = document.createElement('input');
-                                    iEmail.type = 'hidden';
-                                    iEmail.name = 'email';
-                                    iEmail.value = email;
-                                    f.appendChild(iEmail);
-
-                                    const iPass = document.createElement('input');
-                                    iPass.type = 'hidden';
-                                    iPass.name = 'password';
-                                    iPass.value = password;
-                                    f.appendChild(iPass);
-
-                                    const iRemember = document.createElement('input');
-                                    iRemember.type = 'hidden';
-                                    iRemember.name = 'remember';
-                                    iRemember.value = remember ? 'on' : '';
-                                    f.appendChild(iRemember);
-
-                                    document.body.appendChild(f);
-                                    f.submit();
-                                    return;
-                                } catch (e) {
-                                    // fallback to client-side redirect if session setup fails
-                                    window.location.href = path;
-                                    return;
-                                }
-                            }
-                            return;
-                        }
-
-                        // handle validation errors
-                        if (res.status === 422) {
-                            const json = await res.json();
-                            if (json.errors) {
-                                if (json.errors.email) document.getElementById('email-error')
-                                    .textContent = json.errors.email.join(' ');
-                                if (json.errors.password) document.getElementById('password-error')
-                                    .textContent = json.errors.password.join(' ');
-                            } else if (json.message) {
-                                document.getElementById('general-error').textContent = json.message;
-                            }
-                            return;
-                        }
-
-                        // other errors
-                        let text = await res.text();
-                        document.getElementById('general-error').textContent = text || 'Login failed';
-
-                    } catch (err) {
-                        document.getElementById('general-error').textContent =
-                            'Network error. Please try again.';
-                        console.error(err);
-                    }
-                });
-            }
-
-            function clearErrors() {
-                const eEmail = document.getElementById('email-error');
-                if (eEmail) eEmail.textContent = '';
-                const ePass = document.getElementById('password-error');
-                if (ePass) ePass.textContent = '';
-                const eGen = document.getElementById('general-error');
-                if (eGen) eGen.textContent = '';
-            }
         });
     </script>
 </body>

@@ -49,7 +49,7 @@
                 <a href="{{ route('mahasiswa.formal-requests') }}"
                     class="nav-link {{ request()->routeIs('mahasiswa.formal-requests') ? 'active' : '' }}">
                     <i class="fas fa-book"></i>
-                    <span class="nav-text">Permohonan Formal</span>
+                    <span class="nav-text">Permohonan Mangang</span>
                 </a>
             </li>
 

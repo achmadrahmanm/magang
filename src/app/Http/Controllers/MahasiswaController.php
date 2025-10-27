@@ -14,6 +14,7 @@ use App\Models\Application;
 use App\Models\ApplicationMember;
 use App\Models\ApplicationDocument;
 use App\Models\Student;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MahasiswaController extends Controller
 {
@@ -216,8 +217,8 @@ class MahasiswaController extends Controller
 
             // Calculate end date based on duration
             $startDate = \Carbon\Carbon::parse($request->start_date);
-            $endDate = $startDate->copy()->addMonths($request->duration);
-
+              $endDate = $startDate->copy()->addMonths(intval($request->duration));
+              
             // Create application
             $application = Application::create([
                 'institution_name' => $request->company,
@@ -568,6 +569,125 @@ class MahasiswaController extends Controller
                 'proposals' => [],
                 'total' => 0
             ], 500);
+        }
+    }
+
+    /**
+     * Show proposal details and generate PDF
+     */
+    public function showProposal($proposalId)
+    {
+        try {
+            // Find application
+            $application = Application::with([
+                'members.student',
+                'documents',
+                'submittedBy'
+            ])
+                ->where('id', $proposalId)
+                ->first();
+
+            if (!$application) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Proposal tidak ditemukan'
+                ], 404);
+            }
+
+            // Check if user owns this application or is a member
+            $userCanAccess = $application->submitted_by === Auth::id() ||
+                $application->members()->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })->exists();
+
+            if (!$userCanAccess) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses ke proposal ini'
+                ], 403);
+            }
+
+            // Get active signature for footer
+            $activeSignature = Auth::user()->activeSignature;
+
+            // Generate PDF
+            $pdf = Pdf::loadView('pdf.proposal', [
+                'application' => $application,
+                'signature' => $activeSignature
+            ]);
+
+            // Set paper size and orientation
+            $pdf->setPaper('a4', 'portrait');
+
+            // Return PDF as stream (inline display)
+            return $pdf->stream('Surat_Pengantar_Proposal_APP-' . $application->id . '.pdf');
+
+        } catch (\Exception $e) {
+            \Log::error('Error generating proposal PDF', [
+                'proposal_id' => $proposalId,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghasilkan PDF proposal'
+            ], 500);
+        }
+    }
+
+    /**
+     * View proposal PDF (web route for inline display)
+     */
+    public function viewProposalPdf($proposalId)
+    {
+        try {
+            // Find application
+            $application = Application::with([
+                'members.student',
+                'documents',
+                'submittedBy'
+            ])
+                ->where('id', $proposalId)
+                ->first();
+
+            if (!$application) {
+                abort(404, 'Proposal tidak ditemukan');
+            }
+
+            // Check if user owns this application or is a member
+            $userCanAccess = $application->submitted_by === Auth::id() ||
+                $application->members()->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })->exists();
+
+            if (!$userCanAccess) {
+                abort(403, 'Anda tidak memiliki akses ke proposal ini');
+            }
+
+            // Get active signature for footer
+            $activeSignature = Auth::user()->activeSignature;
+
+            // Generate PDF
+            $pdf = Pdf::loadView('pdf.proposal', [
+                'application' => $application,
+                'signature' => $activeSignature
+            ]);
+
+            // Set paper size and orientation
+            $pdf->setPaper('a4', 'portrait');
+
+            // Return PDF as stream (inline display)
+            return $pdf->stream('Surat_Pengantar_Proposal_APP-' . $application->id . '.pdf');
+
+        } catch (\Exception $e) {
+            \Log::error('Error generating proposal PDF', [
+                'proposal_id' => $proposalId,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
+            abort(500, 'Gagal menghasilkan PDF proposal');
         }
     }
 

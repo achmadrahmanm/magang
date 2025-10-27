@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/proposals', [MahasiswaController::class, 'getProposals'])->name('mahasiswa.get-proposals');
     Route::get('/mahasiswa/proposal/{proposalId}/download', [MahasiswaController::class, 'downloadProposal'])->name('mahasiswa.download-proposal');
     Route::get('/mahasiswa/proposal/{proposalId}/preview', [MahasiswaController::class, 'previewProposal'])->name('mahasiswa.preview-proposal');
+    Route::get('/mahasiswa/proposal/{proposalId}/view-pdf', [MahasiswaController::class, 'viewProposalPdf'])->name('mahasiswa.view-proposal-pdf');
     Route::delete('/mahasiswa/proposal/{proposalId}', [MahasiswaController::class, 'deleteProposal'])->name('mahasiswa.delete-proposal');
     Route::get('/mahasiswa/business-fields', [MahasiswaController::class, 'getBusinessFields'])->name('mahasiswa.business-fields');
 

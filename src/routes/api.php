@@ -21,7 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/mahasiswa/proposal/save-draft', [MahasiswaController::class, 'saveDraft']);
     Route::get('/mahasiswa/proposal/load-draft', [MahasiswaController::class, 'loadDraft']);
 
-    // Mahasiswa Signature CRUD (API)
+    // Mahasiswa CRUD (API)
     Route::post('/signature', [MahasiswaController::class, 'saveSignature']);
     Route::get('/signatures', [MahasiswaController::class, 'getUserSignatures']);
     Route::delete('/signature/{signatureId}', [MahasiswaController::class, 'deleteSignature']);
