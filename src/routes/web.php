@@ -67,5 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/mahasiswa/signature/{signatureId}/set-active', [MahasiswaController::class, 'setActiveSignature'])->name('mahasiswa.set-active-signature');
     Route::get('/mahasiswa/signature/{signatureId}/download', [MahasiswaController::class, 'downloadSignature'])->name('mahasiswa.download-signature');
 
+    // NIP/NRP Checker routes
+    Route::post('/mahasiswa/check-nip', [MahasiswaController::class, 'checkNip'])->name('mahasiswa.check-nip');
+    Route::post('/mahasiswa/check-nrp', [MahasiswaController::class, 'checkNrp'])->name('mahasiswa.check-nrp');
 
 });

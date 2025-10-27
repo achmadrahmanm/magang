@@ -25,6 +25,7 @@ class Application extends Model
         'planned_end_date',
         'purpose_letter_path',
         'notes',
+        'lecturer_nip',
         'status',
         'status_note',
         'reviewed_by',

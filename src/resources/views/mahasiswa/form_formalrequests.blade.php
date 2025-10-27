@@ -201,6 +201,69 @@
                         </div>
                     </div>
 
+                    <!-- Lecturer Information Section -->
+                    <div class="card-modern mb-4">
+                        <div class="card-header-gradient mb-4 rounded">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user-tie"></i>
+                                Informasi Dosen Pembimbing
+                            </h5>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-modern" for="lecturer_nip">
+                                    <i class="fas fa-id-card text-primary"></i>
+                                    NIP Dosen Pembimbing <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-modern" id="lecturer_nip"
+                                        name="lecturer_nip" placeholder="Masukkan NIP dosen..." required>
+                                    <button type="button" class="btn btn-outline-primary" id="checkNipBtn">
+                                        <i class="fas fa-search"></i> Cek NIP
+                                    </button>
+                                </div>
+                                <div class="form-text">Masukkan NIP dosen pembimbing untuk memverifikasi data</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-modern" for="lecturer_name">
+                                    <i class="fas fa-user text-primary"></i>
+                                    Nama Lengkap
+                                </label>
+                                <input type="text" class="form-control form-control-modern" id="lecturer_name"
+                                    name="lecturer_name" readonly>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-modern" for="lecturer_email">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                    Email Kampus
+                                </label>
+                                <input type="email" class="form-control form-control-modern" id="lecturer_email"
+                                    name="lecturer_email" readonly>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label-modern" for="lecturer_prodi">
+                                    <i class="fas fa-graduation-cap text-primary"></i>
+                                    Program Studi
+                                </label>
+                                <input type="text" class="form-control form-control-modern" id="lecturer_prodi"
+                                    name="lecturer_prodi" readonly>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label-modern" for="lecturer_fakultas">
+                                    <i class="fas fa-university text-primary"></i>
+                                    Fakultas
+                                </label>
+                                <input type="text" class="form-control form-control-modern" id="lecturer_fakultas"
+                                    name="lecturer_fakultas" readonly>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Proposal Document Section -->
                     <div class="card-modern mb-4">
                         <div class="card-header-gradient mb-4 rounded">
@@ -350,25 +413,30 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-3 mb-3">
                     <label class="form-label-modern">NRP/Student ID <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-modern" name="members[][student_id]"
-                        placeholder="Contoh: 5025211001" required>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-modern" name="members[][student_id]"
+                            placeholder="Contoh: 5025211001" required>
+                        <button type="button" class="btn btn-outline-primary check-nrp-btn">
+                            <i class="fas fa-search"></i> Cek NRP
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label-modern">Nama Lengkap <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-modern" name="members[][name]"
-                        placeholder="Masukkan nama lengkap..." required>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label-modern">Nama Lengkap</label>
+                    <input type="text" class="form-control form-control-modern member-name" name="members[][name]"
+                        placeholder="Otomatis terisi setelah cek NRP" readonly>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label-modern">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control form-control-modern" name="members[][email]"
-                        placeholder="email@example.com" required>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label-modern">Email</label>
+                    <input type="email" class="form-control form-control-modern member-email" name="members[][email]"
+                        placeholder="Otomatis terisi setelah cek NRP" readonly>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label-modern">Angkatan <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control form-control-modern" name="members[][year]"
-                        placeholder="2023" min="2015" max="2030" required>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label-modern">Angkatan</label>
+                    <input type="number" class="form-control form-control-modern member-year" name="members[][year]"
+                        placeholder="Otomatis terisi setelah cek NRP" readonly min="2015" max="2030">
                 </div>
             </div>
         </div>
@@ -512,6 +580,120 @@
                 loadDraftFromServer();
             });
 
+            // NIP Checker functionality
+            document.getElementById('checkNipBtn').addEventListener('click', function() {
+                checkNip();
+            });
+
+            // Function to check NIP
+            function checkNip() {
+                const nipInput = document.getElementById('lecturer_nip');
+                const nip = nipInput.value.trim();
+
+                if (!nip) {
+                    showNotification('warning', 'Peringatan', 'Silakan masukkan NIP terlebih dahulu');
+                    return;
+                }
+
+                const btn = document.getElementById('checkNipBtn');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memverifikasi...';
+
+                fetch('{{ route('mahasiswa.check-nip') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            nip: nip
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Fill lecturer details
+                            document.getElementById('lecturer_name').value = data.data.nama_resmi;
+                            document.getElementById('lecturer_email').value = data.data.email_kampus;
+                            document.getElementById('lecturer_prodi').value = data.data.prodi;
+                            document.getElementById('lecturer_fakultas').value = data.data.fakultas;
+
+                            showNotification('success', 'NIP Ditemukan', 'Data dosen berhasil diverifikasi');
+                        } else {
+                            // Clear fields
+                            document.getElementById('lecturer_name').value = '';
+                            document.getElementById('lecturer_email').value = '';
+                            document.getElementById('lecturer_prodi').value = '';
+                            document.getElementById('lecturer_fakultas').value = '';
+
+                            showNotification('error', 'NIP Tidak Ditemukan', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking NIP:', error);
+                        showNotification('error', 'Terjadi Kesalahan', 'Gagal memverifikasi NIP');
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    });
+            }
+
+            // Function to check NRP for members
+            function checkNrp(memberElement) {
+                const nrpInput = memberElement.querySelector('input[name$="[student_id]"]');
+                const nrp = nrpInput.value.trim();
+
+                if (!nrp) {
+                    showNotification('warning', 'Peringatan', 'Silakan masukkan NRP terlebih dahulu');
+                    return;
+                }
+
+                const btn = memberElement.querySelector('.check-nrp-btn');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memverifikasi...';
+
+                fetch('{{ route('mahasiswa.check-nrp') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            nrp: nrp
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Fill member details
+                            memberElement.querySelector('.member-name').value = data.data.nama_resmi;
+                            memberElement.querySelector('.member-email').value = data.data.email_kampus;
+                            memberElement.querySelector('.member-year').value = data.data.angkatan;
+
+                            showNotification('success', 'NRP Ditemukan',
+                                'Data mahasiswa berhasil diverifikasi');
+                        } else {
+                            // Clear fields
+                            memberElement.querySelector('.member-name').value = '';
+                            memberElement.querySelector('.member-email').value = '';
+                            memberElement.querySelector('.member-year').value = '';
+
+                            showNotification('error', 'NRP Tidak Ditemukan', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking NRP:', error);
+                        showNotification('error', 'Terjadi Kesalahan', 'Gagal memverifikasi NRP');
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    });
+            }
+
             // Function to load draft data from server
             function loadDraftFromServer() {
                 const btn = document.getElementById('loadDraftBtn');
@@ -553,6 +735,7 @@
                 document.getElementById('division').value = draft.division || '';
                 document.getElementById('start_date').value = draft.start_date || '';
                 document.getElementById('duration').value = draft.duration || '';
+                document.getElementById('lecturer_nip').value = draft.lecturer_nip || '';
 
                 // Clear existing additional members (keep leader)
                 const membersContainer = document.getElementById('membersContainer');
@@ -568,7 +751,7 @@
                         if (member.role === 'leader') {
                             // Update leader year field
                             const leaderYearField = document.querySelector(
-                            'input[name="members[0][year]"]');
+                                'input[name="members[0][year]"]');
                             if (leaderYearField) {
                                 leaderYearField.value = member.year || '';
                             }
@@ -667,6 +850,15 @@
                 if (memberCount >= maxMembers) {
                     this.disabled = true;
                     this.innerHTML = '<i class="fas fa-users"></i> Maksimal 4 Anggota';
+                }
+            });
+
+            // Event delegation for NRP check buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('check-nrp-btn') || e.target.parentElement.classList
+                    .contains('check-nrp-btn')) {
+                    const memberItem = e.target.closest('.member-item');
+                    checkNrp(memberItem);
                 }
             });
 

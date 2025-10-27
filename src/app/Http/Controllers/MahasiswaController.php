@@ -14,6 +14,7 @@ use App\Models\Application;
 use App\Models\ApplicationMember;
 use App\Models\ApplicationDocument;
 use App\Models\Student;
+use App\Models\Lecturer;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class MahasiswaController extends Controller
@@ -69,6 +70,7 @@ class MahasiswaController extends Controller
                 'duration' => $draft->planned_start_date && $draft->planned_end_date
                     ? $draft->planned_start_date->diffInMonths($draft->planned_end_date)
                     : '',
+                'lecturer_nip' => $draft->lecturer_nip ?: '',
                 'members' => [],
                 'has_proposal_file' => false,
                 'proposal_file_name' => '',
@@ -190,6 +192,11 @@ class MahasiswaController extends Controller
                 'start_date' => 'required|date|after:today',
                 'duration' => 'required|integer|min:1|max:12',
                 'proposal_file' => 'required|file|mimes:pdf|max:10240', // 10MB max
+                'lecturer_nip' => 'required|string|max:20',
+                'lecturer_name' => 'required|string|max:255',
+                'lecturer_email' => 'required|email|max:255',
+                'lecturer_prodi' => 'required|string|max:255',
+                'lecturer_fakultas' => 'required|string|max:255',
                 'members' => 'required|array|min:1|max:4',
                 'members.*.student_id' => 'required|string|max:20',
                 'members.*.name' => 'required|string|max:255',
@@ -229,6 +236,7 @@ class MahasiswaController extends Controller
                 'planned_start_date' => $request->start_date,
                 'planned_end_date' => $endDate,
                 'notes' => $request->topic,
+                'lecturer_nip' => $request->lecturer_nip,
                 'status' => 'submitted',
                 'submitted_by' => Auth::id(),
             ]);
@@ -373,6 +381,7 @@ class MahasiswaController extends Controller
                     'planned_start_date' => $request->start_date ?: $existingDraft->planned_start_date,
                     'planned_end_date' => $endDate ?: $existingDraft->planned_end_date,
                     'notes' => $request->topic ?: $existingDraft->notes,
+                    'lecturer_nip' => $request->lecturer_nip ?: $existingDraft->lecturer_nip,
                 ]);
 
                 $application = $existingDraft;
@@ -387,6 +396,7 @@ class MahasiswaController extends Controller
                     'planned_start_date' => $request->start_date ?: now()->addMonth(),
                     'planned_end_date' => $endDate ?: now()->addMonths(6),
                     'notes' => $request->topic ?: 'Draft proposal',
+                    'lecturer_nip' => $request->lecturer_nip ?: '',
                     'status' => 'draft',
                     'submitted_by' => Auth::id(),
                 ]);                // Add current user as leader
@@ -1177,6 +1187,111 @@ class MahasiswaController extends Controller
             ]);
 
             return back()->with('error', 'Gagal mengunduh signature');
+        }
+    }
+
+    /**
+     * Check NIP and return lecturer details
+     */
+    public function checkNip(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'nip' => 'required|string|max:20'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NIP tidak valid',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $lecturer = Lecturer::where('nip', $request->nip)->first();
+
+            if (!$lecturer) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NIP tidak ditemukan dalam database'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'NIP ditemukan',
+                'data' => [
+                    'nip' => $lecturer->nip,
+                    'nama_resmi' => $lecturer->nama_resmi,
+                    'email_kampus' => $lecturer->email_kampus,
+                    'prodi' => $lecturer->prodi,
+                    'fakultas' => $lecturer->fakultas,
+                    'jabatan' => $lecturer->jabatan
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error checking NIP', [
+                'nip' => $request->nip,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memverifikasi NIP'
+            ], 500);
+        }
+    }
+
+    /**
+     * Check NRP and return student details
+     */
+    public function checkNrp(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'nrp' => 'required|string|max:20'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NRP tidak valid',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $student = Student::where('nrp', $request->nrp)->first();
+
+            if (!$student) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NRP tidak ditemukan dalam database'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'NRP ditemukan',
+                'data' => [
+                    'nrp' => $student->nrp,
+                    'nama_resmi' => $student->nama_resmi,
+                    'email_kampus' => $student->email_kampus,
+                    'prodi' => $student->prodi,
+                    'fakultas' => $student->fakultas,
+                    'angkatan' => $student->angkatan,
+                    'status_akademik' => $student->status_akademik
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error checking NRP', [
+                'nrp' => $request->nrp,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memverifikasi NRP'
+            ], 500);
         }
     }
 }
