@@ -29,7 +29,7 @@ class MahasiswaController extends Controller
 
         return view('mahasiswa.form_formalrequests', [
             'draft' => $draft,
-            'businessFields' => $businessFields
+            'businessFields' => $businessFields,
         ]);
     }
 
@@ -53,9 +53,11 @@ class MahasiswaController extends Controller
             }
 
             // Prioritize draft with documents, otherwise use the most recent
-            $draft = $drafts->first(function ($d) {
-                return $d->documents->where('document_type', 'draft_purpose_letter')->isNotEmpty();
-            }) ?: $drafts->first();
+            $draft =
+                $drafts->first(function ($d) {
+                    return $d->documents->where('document_type', 'draft_purpose_letter')->isNotEmpty();
+                }) ?:
+                $drafts->first();
 
             // Format draft data for form population
             $formattedDraft = [
@@ -67,14 +69,12 @@ class MahasiswaController extends Controller
                 'department' => $draft->placement_division,
                 'division' => $draft->division ?: '',
                 'start_date' => $draft->planned_start_date ? $draft->planned_start_date->format('Y-m-d') : '',
-                'duration' => $draft->planned_start_date && $draft->planned_end_date
-                    ? $draft->planned_start_date->diffInMonths($draft->planned_end_date)
-                    : '',
+                'duration' => $draft->planned_start_date && $draft->planned_end_date ? $draft->planned_start_date->diffInMonths($draft->planned_end_date) : '',
                 'lecturer_nip' => $draft->lecturer_nip ?: '',
                 'members' => [],
                 'has_proposal_file' => false,
                 'proposal_file_name' => '',
-                'saved_at' => $draft->updated_at->format('d M Y H:i')
+                'saved_at' => $draft->updated_at->format('d M Y H:i'),
             ];
 
             // Get members data
@@ -86,15 +86,13 @@ class MahasiswaController extends Controller
                         'name' => $student->nama_resmi,
                         'email' => $student->email_kampus,
                         'year' => $student->angkatan,
-                        'role' => $member->role
+                        'role' => $member->role,
                     ];
                 }
             }
 
             // Check for proposal file
-            $proposalDoc = $draft->documents
-                ->where('document_type', 'draft_purpose_letter')
-                ->first();
+            $proposalDoc = $draft->documents->where('document_type', 'draft_purpose_letter')->first();
 
             if ($proposalDoc) {
                 $formattedDraft['has_proposal_file'] = true;
@@ -106,7 +104,7 @@ class MahasiswaController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error getting user draft', [
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return null;
@@ -124,20 +122,23 @@ class MahasiswaController extends Controller
             return response()->json([
                 'success' => true,
                 'draft' => $draft,
-                'has_draft' => !is_null($draft)
+                'has_draft' => !is_null($draft),
             ]);
         } catch (\Exception $e) {
             \Log::error('Error loading draft via AJAX', [
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal memuat draft',
-                'draft' => null,
-                'has_draft' => false
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal memuat draft',
+                    'draft' => null,
+                    'has_draft' => false,
+                ],
+                500,
+            );
         }
     }
 
@@ -153,25 +154,12 @@ class MahasiswaController extends Controller
                 return [
                     'code' => $field->code,
                     'name' => $field->name,
-                    'name_en' => $field->name_en
+                    'name_en' => $field->name_en,
                 ];
             });
         } catch (\Exception $e) {
             // Return fallback options if database fails
-            return collect([
-                ['code' => 'technology', 'name' => 'Teknologi Informasi', 'name_en' => 'Technology'],
-                ['code' => 'finance', 'name' => 'Keuangan & Perbankan', 'name_en' => 'Finance'],
-                ['code' => 'manufacturing', 'name' => 'Manufaktur', 'name_en' => 'Manufacturing'],
-                ['code' => 'healthcare', 'name' => 'Kesehatan', 'name_en' => 'Healthcare'],
-                ['code' => 'education', 'name' => 'Pendidikan', 'name_en' => 'Education'],
-                ['code' => 'retail', 'name' => 'Retail & E-commerce', 'name_en' => 'Retail'],
-                ['code' => 'energy', 'name' => 'Energi & Pertambangan', 'name_en' => 'Energy'],
-                ['code' => 'transportation', 'name' => 'Transportasi & Logistik', 'name_en' => 'Transportation'],
-                ['code' => 'construction', 'name' => 'Konstruksi & Properti', 'name_en' => 'Construction'],
-                ['code' => 'media', 'name' => 'Media & Komunikasi', 'name_en' => 'Media'],
-                ['code' => 'government', 'name' => 'Pemerintahan', 'name_en' => 'Government'],
-                ['code' => 'other', 'name' => 'Lainnya', 'name_en' => 'Other']
-            ]);
+            return collect([['code' => 'technology', 'name' => 'Teknologi Informasi', 'name_en' => 'Technology'], ['code' => 'finance', 'name' => 'Keuangan & Perbankan', 'name_en' => 'Finance'], ['code' => 'manufacturing', 'name' => 'Manufaktur', 'name_en' => 'Manufacturing'], ['code' => 'healthcare', 'name' => 'Kesehatan', 'name_en' => 'Healthcare'], ['code' => 'education', 'name' => 'Pendidikan', 'name_en' => 'Education'], ['code' => 'retail', 'name' => 'Retail & E-commerce', 'name_en' => 'Retail'], ['code' => 'energy', 'name' => 'Energi & Pertambangan', 'name_en' => 'Energy'], ['code' => 'transportation', 'name' => 'Transportasi & Logistik', 'name_en' => 'Transportation'], ['code' => 'construction', 'name' => 'Konstruksi & Properti', 'name_en' => 'Construction'], ['code' => 'media', 'name' => 'Media & Komunikasi', 'name_en' => 'Media'], ['code' => 'government', 'name' => 'Pemerintahan', 'name_en' => 'Government'], ['code' => 'other', 'name' => 'Lainnya', 'name_en' => 'Other']]);
         }
     }
 
@@ -202,30 +190,25 @@ class MahasiswaController extends Controller
                 'members.*.name' => 'required|string|max:255',
                 'members.*.email' => 'required|email|max:255',
                 'members.*.year' => 'required|integer|min:2015|max:2030',
-                'agreement' => 'required|accepted'
+                'agreement' => 'required|accepted',
             ]);
 
             if ($validator->fails()) {
-                return back()
-                    ->withErrors($validator)
-                    ->withInput()
-                    ->with('error', 'Terdapat kesalahan dalam pengisian form. Silakan periksa kembali.');
+                return back()->withErrors($validator)->withInput()->with('error', 'Terdapat kesalahan dalam pengisian form. Silakan periksa kembali.');
             }
 
             // Get current user's student record
             $currentStudent = Student::where('user_id', Auth::id())->first();
             if (!$currentStudent) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Data mahasiswa tidak ditemukan. Silakan hubungi administrator.');
+                return back()->withInput()->with('error', 'Data mahasiswa tidak ditemukan. Silakan hubungi administrator.');
             }
 
             DB::beginTransaction();
 
             // Calculate end date based on duration
             $startDate = \Carbon\Carbon::parse($request->start_date);
-              $endDate = $startDate->copy()->addMonths(intval($request->duration));
-              
+            $endDate = $startDate->copy()->addMonths(intval($request->duration));
+
             // Create application
             $application = Application::create([
                 'institution_name' => $request->company,
@@ -293,7 +276,7 @@ class MahasiswaController extends Controller
                         'angkatan' => $memberData['year'],
                         'semester_berjalan' => 1,
                         'sks_total' => 0,
-                        'status_akademik' => 'aktif'
+                        'status_akademik' => 'aktif',
                     ]);
                 }
 
@@ -314,7 +297,7 @@ class MahasiswaController extends Controller
                 'user_id' => Auth::id(),
                 'company' => $request->company,
                 'members_count' => count($request->members),
-                'file_size' => $request->hasFile('proposal_file') ? $request->file('proposal_file')->getSize() : 0
+                'file_size' => $request->hasFile('proposal_file') ? $request->file('proposal_file')->getSize() : 0,
             ]);
 
             return redirect()
@@ -327,12 +310,10 @@ class MahasiswaController extends Controller
             \Log::error('Error submitting application', [
                 'error' => $e->getMessage(),
                 'user_id' => Auth::id(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan aplikasi. Silakan coba lagi.');
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan aplikasi. Silakan coba lagi.');
         }
     }
 
@@ -347,22 +328,23 @@ class MahasiswaController extends Controller
             // Get current user's student record
             $currentStudent = Student::where('user_id', Auth::id())->first();
             if (!$currentStudent) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data mahasiswa tidak ditemukan'
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data mahasiswa tidak ditemukan',
+                    ],
+                    422,
+                );
             }
 
             // Check if user already has drafts (prioritize one with documents)
-            $allDrafts = Application::with('documents')
-                ->where('submitted_by', Auth::id())
-                ->where('status', 'draft')
-                ->latest()
-                ->get();
+            $allDrafts = Application::with('documents')->where('submitted_by', Auth::id())->where('status', 'draft')->latest()->get();
 
-            $existingDraft = $allDrafts->first(function ($d) {
-                return $d->documents->where('document_type', 'draft_purpose_letter')->isNotEmpty();
-            }) ?: $allDrafts->first();
+            $existingDraft =
+                $allDrafts->first(function ($d) {
+                    return $d->documents->where('document_type', 'draft_purpose_letter')->isNotEmpty();
+                }) ?:
+                $allDrafts->first();
 
             $endDate = null;
             if ($request->start_date && $request->duration) {
@@ -399,7 +381,7 @@ class MahasiswaController extends Controller
                     'lecturer_nip' => $request->lecturer_nip ?: '',
                     'status' => 'draft',
                     'submitted_by' => Auth::id(),
-                ]);                // Add current user as leader
+                ]); // Add current user as leader
                 ApplicationMember::create([
                     'application_id' => $application->id,
                     'student_id' => $currentStudent->id,
@@ -409,12 +391,45 @@ class MahasiswaController extends Controller
                 ]);
             }
 
+            // Add other members (loop members and create student record if missing)
+            if ($request->members) {
+                foreach ($request->members as $memberData) {
+                    // Skip if it's the current user (already added as leader)
+                    if (($memberData['student_id'] ?? null) === $currentStudent->nrp) {
+                        continue;
+                    }
+
+                    // Find or create student by NRP
+                    $student = Student::where('nrp', $memberData['student_id'])->first();
+                    if (!$student) {
+                        $student = Student::create([
+                            'user_id' => null,
+                            'nrp' => $memberData['student_id'] ?? null,
+                            'nama_resmi' => $memberData['name'] ?? 'Unknown',
+                            'email_kampus' => $memberData['email'] ?? null,
+                            'prodi' => $currentStudent->prodi,
+                            'fakultas' => $currentStudent->fakultas,
+                            'angkatan' => $memberData['year'] ?? null,
+                            'semester_berjalan' => 1,
+                            'sks_total' => 0,
+                            'status_akademik' => 'aktif',
+                        ]);
+                    }
+
+                    ApplicationMember::create([
+                        'application_id' => $application->id,
+                        'student_id' => $student->id,
+                        'role' => 'member',
+                        'notes' => 'Draft - Anggota tim magang',
+                        'joined_at' => now(),
+                    ]);
+                }
+            }
+
             // Handle file upload for draft if exists
             if ($request->hasFile('proposal_file')) {
-                // Delete old draft file if exists  
-                $oldDocument = ApplicationDocument::where('application_id', $application->id)
-                    ->where('document_type', 'draft_purpose_letter')
-                    ->first();
+                // Delete old draft file if exists
+                $oldDocument = ApplicationDocument::where('application_id', $application->id)->where('document_type', 'draft_purpose_letter')->first();
 
                 if ($oldDocument) {
                     if (Storage::disk('public')->exists($oldDocument->file_path)) {
@@ -465,21 +480,208 @@ class MahasiswaController extends Controller
                 'success' => true,
                 'message' => 'Draft berhasil disimpan',
                 'draft_id' => $application->id,
+                'request-member' => $request->members,
+                'members' => $application
+                    ->members()
+                    ->with('student')
+                    ->get()
+                    ->map(function ($member) {
+                        return [
+                            'student_id' => $member->student->nrp,
+                            'name' => $member->student->nama_resmi,
+                            'email' => $member->student->email_kampus,
+                            'year' => $member->student->angkatan,
+                            'role' => $member->role,
+                        ];
+                    }),
+                'members_count' => $application->members()->count(),
                 'application_id' => 'DRAFT-' . $application->id,
-                'saved_at' => $application->updated_at->format('d M Y H:i')
+                'saved_at' => $application->updated_at->format('d M Y H:i'),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
             \Log::error('Error saving draft', [
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal menyimpan draft: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
+
+    /**
+     * Update proposal/application
+     */
+    public function updateProposal(Request $request, $proposalId)
+    {
+        try {
+            // Validate the request
+            $validator = Validator::make($request->all(), [
+                'topic' => 'required|string|max:255',
+                'company' => 'required|string|max:255',
+                'company_address' => 'required|string|max:1000',
+                'business_field' => 'required|string|max:100',
+                'department' => 'required|string|max:255',
+                'division' => 'nullable|string|max:255',
+                'start_date' => 'required|date|after:today',
+                'duration' => 'required|integer|min:1|max:12',
+                'lecturer_nip' => 'required|string|max:20',
+                'lecturer_name' => 'required|string|max:255',
+                'lecturer_email' => 'required|email|max:255',
+                'lecturer_prodi' => 'required|string|max:255',
+                'lecturer_fakultas' => 'required|string|max:255',
+                'members' => 'required|array|min:1|max:4',
+                'members.*.student_id' => 'required|string|max:20',
+                'members.*.name' => 'required|string|max:255',
+                'members.*.email' => 'required|email|max:255',
+                'members.*.year' => 'required|integer|min:2015|max:2030',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Validation failed',
+                        'errors' => $validator->errors(),
+                    ],
+                    422,
+                );
+            }
+
+            // Find the application
+            $application = Application::where('id', $proposalId)->where('submitted_by', Auth::id())->first();
+
+            if (!$application) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Application not found or access denied',
+                    ],
+                    404,
+                );
+            }
+
+            // Check if application can be updated (only draft or submitted status)
+            if (!in_array($application->status, ['draft', 'submitted'])) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Application with status "' . $application->getStatusDisplayText() . '" cannot be updated',
+                    ],
+                    422,
+                );
+            }
+
+            DB::beginTransaction();
+
+            // Calculate end date based on duration
+            $startDate = \Carbon\Carbon::parse($request->start_date);
+            $endDate = $startDate->copy()->addMonths(intval($request->duration));
+
+            // Update application
+            $application->update([
+                'institution_name' => $request->company,
+                'institution_address' => $request->company_address,
+                'business_field' => $request->business_field,
+                'placement_division' => $request->department,
+                'division' => $request->division,
+                'planned_start_date' => $request->start_date,
+                'planned_end_date' => $endDate,
+                'notes' => $request->topic,
+                'lecturer_nip' => $request->lecturer_nip,
+            ]);
+
+            // Get current user's student record
+            $currentStudent = Student::where('user_id', Auth::id())->first();
+
+            if (!$currentStudent) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Student record not found',
+                    ],
+                    422,
+                );
+            }
+
+            // Update members - first remove existing members except leader
+            $application->members()->where('role', 'member')->delete();
+
+            // Add/update members
+            foreach ($request->members as $memberData) {
+                // Skip if it's the current user (already exists as leader)
+                if ($memberData['student_id'] === $currentStudent->nrp) {
+                    continue;
+                }
+
+                // Find or create student by NRP
+                $student = Student::where('nrp', $memberData['student_id'])->first();
+
+                if (!$student) {
+                    // Create temporary student record if not exists
+                    $student = Student::create([
+                        'user_id' => null, // Will be linked when user registers
+                        'nrp' => $memberData['student_id'],
+                        'nama_resmi' => $memberData['name'],
+                        'email_kampus' => $memberData['email'],
+                        'prodi' => $currentStudent->prodi, // Use same program as leader
+                        'fakultas' => $currentStudent->fakultas,
+                        'angkatan' => $memberData['year'],
+                        'semester_berjalan' => 1,
+                        'sks_total' => 0,
+                        'status_akademik' => 'aktif',
+                    ]);
+                }
+
+                ApplicationMember::create([
+                    'application_id' => $application->id,
+                    'student_id' => $student->id,
+                    'role' => 'member',
+                    'notes' => 'Anggota tim magang',
+                    'joined_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            // Log the update
+            \Log::info('Application Updated', [
+                'application_id' => $application->id,
+                'user_id' => Auth::id(),
+                'company' => $request->company,
+                'members_count' => count($request->members),
+                'lecturer_nip' => $request->lecturer_nip,
             ]);
 
             return response()->json([
-                'success' => false,
-                'message' => 'Gagal menyimpan draft: ' . $e->getMessage()
-            ], 500);
+                'success' => true,
+                'message' => 'Application updated successfully',
+                'application_id' => $application->id,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Log::error('Error updating application', [
+                'application_id' => $proposalId,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Failed to update application: ' . $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -492,12 +694,7 @@ class MahasiswaController extends Controller
             $user = Auth::user();
 
             // Get applications where user is the submitter or a member
-            $applications = Application::with([
-                'members.student.user',
-                'documents',
-                'submittedBy',
-                'reviewedBy'
-            ])
+            $applications = Application::with(['members.student.user', 'documents', 'submittedBy', 'reviewedBy'])
                 ->where('submitted_by', $user->id)
                 ->latest()
                 ->get();
@@ -511,7 +708,7 @@ class MahasiswaController extends Controller
                         'email' => $member->student->email_kampus ?? 'N/A',
                         'year' => $member->student->angkatan ?? date('Y'),
                         'role' => $member->role,
-                        'notes' => $member->notes
+                        'notes' => $member->notes,
                     ];
                 });
 
@@ -522,9 +719,25 @@ class MahasiswaController extends Controller
                         'name' => $doc->document_name,
                         'size' => $doc->file_size_human,
                         'is_verified' => $doc->is_verified,
-                        'uploaded_at' => $doc->created_at->format('d M Y H:i')
+                        'uploaded_at' => $doc->created_at->format('d M Y H:i'),
                     ];
                 });
+
+                // Get lecturer information if lecturer_nip exists
+                $lecturer = null;
+                if ($application->lecturer_nip) {
+                    $lecturerData = Lecturer::where('nip', $application->lecturer_nip)->first();
+                    if ($lecturerData) {
+                        $lecturer = [
+                            'nip' => $lecturerData->nip,
+                            'nama_resmi' => $lecturerData->nama_resmi,
+                            'email_kampus' => $lecturerData->email_kampus,
+                            'prodi' => $lecturerData->prodi,
+                            'fakultas' => $lecturerData->fakultas,
+                            'jabatan' => $lecturerData->jabatan,
+                        ];
+                    }
+                }
 
                 return [
                     'id' => $application->id,
@@ -541,6 +754,8 @@ class MahasiswaController extends Controller
                     'start_date' => $application->planned_start_date->format('Y-m-d'),
                     'end_date' => $application->planned_end_date->format('Y-m-d'),
                     'duration' => $application->getDurationInDays(),
+                    'lecturer_nip' => $application->lecturer_nip,
+                    'lecturer' => $lecturer,
                     'members' => $members,
                     'documents' => $documents,
                     'status' => $application->status,
@@ -552,7 +767,7 @@ class MahasiswaController extends Controller
                     'reviewed_at' => $application->reviewed_at?->format('d M Y H:i'),
                     'submitted_at' => $application->created_at->format('d M Y H:i'),
                     'created_at' => $application->created_at,
-                    'updated_at' => $application->updated_at
+                    'updated_at' => $application->updated_at,
                 ];
             });
 
@@ -564,21 +779,24 @@ class MahasiswaController extends Controller
                 'applications' => $formattedApplications,
                 'proposals' => $formattedApplications, // For backward compatibility
                 'draft' => $draft,
-                'total' => $formattedApplications->count()
+                'total' => $formattedApplications->count(),
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching applications', [
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengambil data aplikasi',
-                'applications' => [],
-                'proposals' => [],
-                'total' => 0
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal mengambil data aplikasi',
+                    'applications' => [],
+                    'proposals' => [],
+                    'total' => 0,
+                ],
+                500,
+            );
         }
     }
 
@@ -588,42 +806,71 @@ class MahasiswaController extends Controller
     public function showProposal($proposalId)
     {
         try {
-            // Find application
-            $application = Application::with([
-                'members.student',
-                'documents',
-                'submittedBy'
-            ])
+            // Find application (ensure we eager-load student -> user so signatures are available)
+            $application = Application::with(['members.student.user', 'documents', 'submittedBy'])
                 ->where('id', $proposalId)
                 ->first();
 
             if (!$application) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Proposal tidak ditemukan'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Proposal tidak ditemukan',
+                    ],
+                    404,
+                );
             }
 
             // Check if user owns this application or is a member
-            $userCanAccess = $application->submitted_by === Auth::id() ||
-                $application->members()->whereHas('student', function ($q) {
-                    $q->where('user_id', Auth::id());
-                })->exists();
+            $userCanAccess =
+                $application->submitted_by === Auth::id() ||
+                $application
+                    ->members()
+                    ->whereHas('student', function ($q) {
+                        $q->where('user_id', Auth::id());
+                    })
+                    ->exists();
 
             if (!$userCanAccess) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda tidak memiliki akses ke proposal ini'
-                ], 403);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Anda tidak memiliki akses ke proposal ini',
+                    ],
+                    403,
+                );
             }
 
-            // Get active signature for footer
-            $activeSignature = Auth::user()->activeSignature;
+            // Determine approver signature: prefer selected lecturer's active signature, otherwise fall back to submitter or auth user
+            $approverSignature = null;
+            $approverName = null;
+            $approverNip = null;
+
+            if ($application->lecturer_nip) {
+                $lecturer = Lecturer::where('nip', $application->lecturer_nip)->with('user')->first();
+                if ($lecturer) {
+                    $approverName = $lecturer->nama_resmi ?? ($lecturer->name ?? null);
+                    $approverNip = $lecturer->nip ?? null;
+                    if (isset($lecturer->user) && $lecturer->user) {
+                        $approverSignature = $lecturer->user->activeSignature ?? null;
+                    }
+                }
+            }
+
+            if (!$approverSignature) {
+                // Fallback to the submitting user signature (if any)
+                $approverSignature = $application->submittedBy->activeSignature ?? Auth::user()->activeSignature ?? null;
+                $approverName = $approverName ?? ($application->submittedBy->name ?? Auth::user()->name ?? null);
+                // If no lecturer NIP, use leader's NRP as identifier
+                $approverNip = $approverNip ?? ($application->members->where('role', 'leader')->first()->student->nrp ?? null);
+            }
 
             // Generate PDF
             $pdf = Pdf::loadView('pdf.proposal', [
                 'application' => $application,
-                'signature' => $activeSignature
+                'signature' => $approverSignature,
+                'approverName' => $approverName,
+                'approverNip' => $approverNip,
             ]);
 
             // Set paper size and orientation
@@ -631,18 +878,20 @@ class MahasiswaController extends Controller
 
             // Return PDF as stream (inline display)
             return $pdf->stream('Surat_Pengantar_Proposal_APP-' . $application->id . '.pdf');
-
         } catch (\Exception $e) {
             \Log::error('Error generating proposal PDF', [
                 'proposal_id' => $proposalId,
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghasilkan PDF proposal'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal menghasilkan PDF proposal',
+                ],
+                500,
+            );
         }
     }
 
@@ -652,12 +901,8 @@ class MahasiswaController extends Controller
     public function viewProposalPdf($proposalId)
     {
         try {
-            // Find application
-            $application = Application::with([
-                'members.student',
-                'documents',
-                'submittedBy'
-            ])
+            // Find application (ensure we eager-load student -> user so signatures are available)
+            $application = Application::with(['members.student.user', 'documents', 'submittedBy'])
                 ->where('id', $proposalId)
                 ->first();
 
@@ -666,22 +911,49 @@ class MahasiswaController extends Controller
             }
 
             // Check if user owns this application or is a member
-            $userCanAccess = $application->submitted_by === Auth::id() ||
-                $application->members()->whereHas('student', function ($q) {
-                    $q->where('user_id', Auth::id());
-                })->exists();
+            $userCanAccess =
+                $application->submitted_by === Auth::id() ||
+                $application
+                    ->members()
+                    ->whereHas('student', function ($q) {
+                        $q->where('user_id', Auth::id());
+                    })
+                    ->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke proposal ini');
             }
 
-            // Get active signature for footer
-            $activeSignature = Auth::user()->activeSignature;
+
+            // Determine approver signature: prefer selected lecturer's active signature, otherwise fall back to submitter or auth user
+            $approverSignature = null;
+            $approverName = null;
+            $approverNip = null;
+
+            if ($application->lecturer_nip) {
+                $lecturer = Lecturer::where('nip', $application->lecturer_nip)->with('user')->first();
+                if ($lecturer) {
+                    $approverName = $lecturer->nama_resmi ?? ($lecturer->name ?? null);
+                    $approverNip = $lecturer->nip ?? null;
+                    if (isset($lecturer->user) && $lecturer->user) {
+                        $approverSignature = $lecturer->user->activeSignature ?? null;
+                    }
+                }
+            }
+
+            if (!$approverSignature) {
+                // Fallback to the submitting user signature (if any)
+                $approverSignature = $application->submittedBy->activeSignature ?? Auth::user()->activeSignature ?? null;
+                $approverName = $approverName ?? ($application->submittedBy->name ?? Auth::user()->name ?? null);
+                $approverNip = $approverNip ?? ($application->members->where('role', 'leader')->first()->student->nrp ?? null);
+            }
 
             // Generate PDF
             $pdf = Pdf::loadView('pdf.proposal', [
                 'application' => $application,
-                'signature' => $activeSignature
+                'signature' => $approverSignature,
+                'approverName' => $approverName,
+                'approverNip' => $approverNip,
             ]);
 
             // Set paper size and orientation
@@ -689,12 +961,11 @@ class MahasiswaController extends Controller
 
             // Return PDF as stream (inline display)
             return $pdf->stream('Surat_Pengantar_Proposal_APP-' . $application->id . '.pdf');
-
         } catch (\Exception $e) {
             \Log::error('Error generating proposal PDF', [
                 'proposal_id' => $proposalId,
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             abort(500, 'Gagal menghasilkan PDF proposal');
@@ -717,19 +988,21 @@ class MahasiswaController extends Controller
             }
 
             // Check if user owns this application or is a member
-            $userCanAccess = $application->submitted_by === Auth::id() ||
-                $application->members()->whereHas('student', function ($q) {
-                    $q->where('user_id', Auth::id());
-                })->exists();
+            $userCanAccess =
+                $application->submitted_by === Auth::id() ||
+                $application
+                    ->members()
+                    ->whereHas('student', function ($q) {
+                        $q->where('user_id', Auth::id());
+                    })
+                    ->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
             }
 
             // Get the main proposal document (purpose_letter)
-            $document = $application->documents()
-                ->where('document_type', 'purpose_letter')
-                ->first();
+            $document = $application->documents()->where('document_type', 'purpose_letter')->first();
 
             if (!$document) {
                 abort(404, 'Dokumen proposal tidak ditemukan');
@@ -739,15 +1012,12 @@ class MahasiswaController extends Controller
                 abort(404, 'File tidak ditemukan di storage');
             }
 
-            return Storage::disk('public')->download(
-                $document->file_path,
-                'Proposal_' . Str::slug($application->institution_name) . '_APP-' . $application->id . '.pdf'
-            );
+            return Storage::disk('public')->download($document->file_path, 'Proposal_' . Str::slug($application->institution_name) . '_APP-' . $application->id . '.pdf');
         } catch (\Exception $e) {
             \Log::error('Error downloading application document', [
                 'application_id' => $applicationId,
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->with('error', 'Gagal mengunduh file dokumen');
@@ -761,28 +1031,28 @@ class MahasiswaController extends Controller
     {
         try {
             // Find application
-            $application = Application::with('documents')
-                ->where('id', $applicationId)
-                ->first();
+            $application = Application::with('documents')->where('id', $applicationId)->first();
 
             if (!$application) {
                 abort(404, 'Aplikasi tidak ditemukan');
             }
 
             // Check if user owns this application or is a member
-            $userCanAccess = $application->submitted_by === Auth::id() ||
-                $application->members()->whereHas('student', function ($q) {
-                    $q->where('user_id', Auth::id());
-                })->exists();
+            $userCanAccess =
+                $application->submitted_by === Auth::id() ||
+                $application
+                    ->members()
+                    ->whereHas('student', function ($q) {
+                        $q->where('user_id', Auth::id());
+                    })
+                    ->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
             }
 
             // Get the main proposal document (purpose_letter)
-            $document = $application->documents()
-                ->where('document_type', 'purpose_letter')
-                ->first();
+            $document = $application->documents()->where('document_type', 'purpose_letter')->first();
 
             if (!$document) {
                 abort(404, 'Dokumen proposal tidak ditemukan');
@@ -796,13 +1066,13 @@ class MahasiswaController extends Controller
 
             return response()->file($filePath, [
                 'Content-Type' => $document->mime_type ?: 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $document->document_name . '"'
+                'Content-Disposition' => 'inline; filename="' . $document->document_name . '"',
             ]);
         } catch (\Exception $e) {
             \Log::error('Error previewing application document', [
                 'application_id' => $applicationId,
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             abort(404, 'File tidak dapat ditampilkan');
@@ -818,23 +1088,27 @@ class MahasiswaController extends Controller
             DB::beginTransaction();
 
             // Find application
-            $application = Application::where('id', $applicationId)
-                ->where('submitted_by', Auth::id())
-                ->first();
+            $application = Application::where('id', $applicationId)->where('submitted_by', Auth::id())->first();
 
             if (!$application) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Aplikasi tidak ditemukan atau Anda tidak memiliki akses'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Aplikasi tidak ditemukan atau Anda tidak memiliki akses',
+                    ],
+                    404,
+                );
             }
 
             // Check if application can be deleted (only submitted or rejected status)
             if (!in_array($application->status, ['submitted', 'rejected'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Aplikasi dengan status "' . $application->getStatusDisplayText() . '" tidak dapat dihapus'
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Aplikasi dengan status "' . $application->getStatusDisplayText() . '" tidak dapat dihapus',
+                    ],
+                    422,
+                );
             }
 
             // Delete all associated documents from storage
@@ -854,12 +1128,12 @@ class MahasiswaController extends Controller
             \Log::info('Application deleted', [
                 'application_id' => $applicationId,
                 'user_id' => Auth::id(),
-                'company' => $companyName
+                'company' => $companyName,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Aplikasi berhasil dihapus'
+                'message' => 'Aplikasi berhasil dihapus',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -867,13 +1141,16 @@ class MahasiswaController extends Controller
             \Log::error('Error deleting application', [
                 'application_id' => $applicationId,
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus aplikasi: ' . $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal menghapus aplikasi: ' . $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -895,7 +1172,7 @@ class MahasiswaController extends Controller
                         'description' => $field->description,
                         'icon' => $field->display_icon,
                         'color' => $field->display_color,
-                        'metadata' => $field->metadata
+                        'metadata' => $field->metadata,
                     ];
                 });
 
@@ -906,11 +1183,11 @@ class MahasiswaController extends Controller
                 'success' => true,
                 'data' => $businessFields,
                 'simple' => $simpleFields, // For simple select dropdowns
-                'total' => $businessFields->count()
+                'total' => $businessFields->count(),
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching business fields', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             // Fallback to hardcoded data if database fails
@@ -926,21 +1203,23 @@ class MahasiswaController extends Controller
                 'construction' => 'Konstruksi & Properti',
                 'media' => 'Media & Komunikasi',
                 'government' => 'Pemerintahan',
-                'other' => 'Lainnya'
+                'other' => 'Lainnya',
             ];
 
             return response()->json([
                 'success' => false,
                 'message' => 'Using fallback data',
-                'data' => collect($fallbackFields)->map(function ($name, $code) {
-                    return [
-                        'code' => $code,
-                        'name' => $name,
-                        'icon' => 'fas fa-building',
-                        'color' => '#6c757d'
-                    ];
-                })->values(),
-                'simple' => $fallbackFields
+                'data' => collect($fallbackFields)
+                    ->map(function ($name, $code) {
+                        return [
+                            'code' => $code,
+                            'name' => $name,
+                            'icon' => 'fas fa-building',
+                            'color' => '#6c757d',
+                        ];
+                    })
+                    ->values(),
+                'simple' => $fallbackFields,
             ]);
         }
     }
@@ -956,7 +1235,7 @@ class MahasiswaController extends Controller
 
         return view('mahasiswa.signature', [
             'activeSignature' => $activeSignature,
-            'allSignatures' => $allSignatures
+            'allSignatures' => $allSignatures,
         ]);
     }
 
@@ -969,15 +1248,18 @@ class MahasiswaController extends Controller
             $validator = Validator::make($request->all(), [
                 'signature_data' => 'required|string',
                 'purpose' => 'nullable|string|max:100',
-                'notes' => 'nullable|string|max:500'
+                'notes' => 'nullable|string|max:500',
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid',
-                    'errors' => $validator->errors()
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data tidak valid',
+                        'errors' => $validator->errors(),
+                    ],
+                    422,
+                );
             }
 
             $user = Auth::user();
@@ -985,10 +1267,13 @@ class MahasiswaController extends Controller
 
             // Validate base64 image
             if (!preg_match('/^data:image\/(png|jpeg|jpg);base64,/', $signatureData)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Format signature tidak valid'
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Format signature tidak valid',
+                    ],
+                    422,
+                );
             }
 
             // Extract base64 data
@@ -996,10 +1281,13 @@ class MahasiswaController extends Controller
             $imageData = base64_decode($imageData);
 
             if ($imageData === false) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal memproses data signature'
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Gagal memproses data signature',
+                    ],
+                    422,
+                );
             }
 
             // Generate filename
@@ -1022,7 +1310,7 @@ class MahasiswaController extends Controller
                 'signature_data' => ['base64' => $signatureData],
                 'is_active' => true,
                 'purpose' => $request->purpose ?? 'general',
-                'notes' => $request->notes
+                'notes' => $request->notes,
             ]);
 
             return response()->json([
@@ -1032,19 +1320,22 @@ class MahasiswaController extends Controller
                     'id' => $signature->id,
                     'url' => $signature->signature_url,
                     'created_at' => $signature->created_at->format('d M Y H:i'),
-                    'file_size' => $signature->formatted_file_size
-                ]
+                    'file_size' => $signature->formatted_file_size,
+                ],
             ]);
         } catch (\Exception $e) {
             \Log::error('Error saving signature', [
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan signature'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat menyimpan signature',
+                ],
+                500,
+            );
         }
     }
 
@@ -1065,20 +1356,23 @@ class MahasiswaController extends Controller
                     'notes' => $signature->notes,
                     'is_active' => $signature->is_active,
                     'file_size' => $signature->formatted_file_size,
-                    'created_at' => $signature->created_at->format('d M Y H:i')
+                    'created_at' => $signature->created_at->format('d M Y H:i'),
                 ];
             });
 
             return response()->json([
                 'success' => true,
                 'signatures' => $formattedSignatures,
-                'total' => $signatures->count()
+                'total' => $signatures->count(),
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengambil data signature'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal mengambil data signature',
+                ],
+                500,
+            );
         }
     }
 
@@ -1088,15 +1382,16 @@ class MahasiswaController extends Controller
     public function deleteSignature($signatureId)
     {
         try {
-            $signature = UserSignature::where('id', $signatureId)
-                ->where('user_id', Auth::id())
-                ->first();
+            $signature = UserSignature::where('id', $signatureId)->where('user_id', Auth::id())->first();
 
             if (!$signature) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Signature tidak ditemukan'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Signature tidak ditemukan',
+                    ],
+                    404,
+                );
             }
 
             // Delete file from storage
@@ -1109,13 +1404,16 @@ class MahasiswaController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Signature berhasil dihapus'
+                'message' => 'Signature berhasil dihapus',
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus signature'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal menghapus signature',
+                ],
+                500,
+            );
         }
     }
 
@@ -1128,15 +1426,16 @@ class MahasiswaController extends Controller
             $user = Auth::user();
 
             // Check if signature belongs to user
-            $signature = UserSignature::where('id', $signatureId)
-                ->where('user_id', $user->id)
-                ->first();
+            $signature = UserSignature::where('id', $signatureId)->where('user_id', $user->id)->first();
 
             if (!$signature) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Signature tidak ditemukan'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Signature tidak ditemukan',
+                    ],
+                    404,
+                );
             }
 
             // Deactivate all signatures
@@ -1147,13 +1446,16 @@ class MahasiswaController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Signature aktif berhasil diubah'
+                'message' => 'Signature aktif berhasil diubah',
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengubah signature aktif'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Gagal mengubah signature aktif',
+                ],
+                500,
+            );
         }
     }
 
@@ -1163,9 +1465,7 @@ class MahasiswaController extends Controller
     public function downloadSignature($signatureId)
     {
         try {
-            $signature = UserSignature::where('id', $signatureId)
-                ->where('user_id', Auth::id())
-                ->first();
+            $signature = UserSignature::where('id', $signatureId)->where('user_id', Auth::id())->first();
 
             if (!$signature) {
                 abort(404, 'Signature tidak ditemukan');
@@ -1175,15 +1475,12 @@ class MahasiswaController extends Controller
                 abort(404, 'File signature tidak ditemukan');
             }
 
-            return Storage::disk('public')->download(
-                $signature->signature_path,
-                'signature_' . Auth::user()->name . '_' . $signature->id . '.png'
-            );
+            return Storage::disk('public')->download($signature->signature_path, 'signature_' . Auth::user()->name . '_' . $signature->id . '.png');
         } catch (\Exception $e) {
             \Log::error('Error downloading signature', [
                 'signature_id' => $signatureId,
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->with('error', 'Gagal mengunduh signature');
@@ -1197,24 +1494,30 @@ class MahasiswaController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'nip' => 'required|string|max:20'
+                'nip' => 'required|string|max:20',
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'NIP tidak valid',
-                    'errors' => $validator->errors()
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'NIP tidak valid',
+                        'errors' => $validator->errors(),
+                    ],
+                    422,
+                );
             }
 
             $lecturer = Lecturer::where('nip', $request->nip)->first();
 
             if (!$lecturer) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'NIP tidak ditemukan dalam database'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'NIP tidak ditemukan dalam database',
+                    ],
+                    404,
+                );
             }
 
             return response()->json([
@@ -1226,19 +1529,22 @@ class MahasiswaController extends Controller
                     'email_kampus' => $lecturer->email_kampus,
                     'prodi' => $lecturer->prodi,
                     'fakultas' => $lecturer->fakultas,
-                    'jabatan' => $lecturer->jabatan
-                ]
+                    'jabatan' => $lecturer->jabatan,
+                ],
             ]);
         } catch (\Exception $e) {
             \Log::error('Error checking NIP', [
                 'nip' => $request->nip,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat memverifikasi NIP'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat memverifikasi NIP',
+                ],
+                500,
+            );
         }
     }
 
@@ -1249,24 +1555,30 @@ class MahasiswaController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'nrp' => 'required|string|max:20'
+                'nrp' => 'required|string|max:20',
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'NRP tidak valid',
-                    'errors' => $validator->errors()
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'NRP tidak valid',
+                        'errors' => $validator->errors(),
+                    ],
+                    422,
+                );
             }
 
             $student = Student::where('nrp', $request->nrp)->first();
 
             if (!$student) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'NRP tidak ditemukan dalam database'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'NRP tidak ditemukan dalam database',
+                    ],
+                    404,
+                );
             }
 
             return response()->json([
@@ -1279,19 +1591,22 @@ class MahasiswaController extends Controller
                     'prodi' => $student->prodi,
                     'fakultas' => $student->fakultas,
                     'angkatan' => $student->angkatan,
-                    'status_akademik' => $student->status_akademik
-                ]
+                    'status_akademik' => $student->status_akademik,
+                ],
             ]);
         } catch (\Exception $e) {
             \Log::error('Error checking NRP', [
                 'nrp' => $request->nrp,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat memverifikasi NRP'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat memverifikasi NRP',
+                ],
+                500,
+            );
         }
     }
 }

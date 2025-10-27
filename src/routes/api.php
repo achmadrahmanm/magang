@@ -27,4 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/signature/{signatureId}', [MahasiswaController::class, 'deleteSignature']);
     Route::post('/signature/{signatureId}/set-active', [MahasiswaController::class, 'setActiveSignature']);
     Route::get('/signature/{signatureId}/download', [MahasiswaController::class, 'downloadSignature']);
+
+    // Utility routes
+    Route::post('/mahasiswa/check-nip', [MahasiswaController::class, 'checkNip']);
+    Route::post('/mahasiswa/check-nrp', [MahasiswaController::class, 'checkNrp']);
 });

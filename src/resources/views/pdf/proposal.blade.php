@@ -15,59 +15,6 @@
             color: #333;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-        }
-
-        .logo-section {
-            border: 1px solid #000;
-            padding: 5px 1rem;
-            width: 200px;
-            font-weight: bold;
-        }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: #666;
-        }
-
-        .institution-info {
-            flex: 2;
-            text-align: center;
-        }
-
-        .institution-name {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .institution-details {
-            font-size: 11px;
-            line-height: 1.4;
-        }
-
-        .contact-info {
-            flex: 1;
-            text-align: right;
-        }
-
-        .contact-info div {
-            margin-bottom: 3px;
-        }
-
         .document-title {
             text-align: center;
             font-size: 14px;
@@ -132,7 +79,7 @@
 
         .signature-section {
             display: inline-block;
-            text-align: center;
+            text-align: right;
             margin-top: 20px;
         }
 
@@ -155,7 +102,7 @@
 
         .separator {
             border-top: 2px solid #333;
-            margin: 30px 0;
+            margin: 18px 0;
         }
 
         .date-info {
@@ -177,35 +124,17 @@
 </head>
 
 <body>
-    <!-- Header -->
-    {{-- <div class="header">
-        <div class="logo-section">
-            <div class="logo">LOGO</div>
-        </div>
-
-        <div class="institution-info">
-            <div class="institution-name">INSTITUT TEKNOLOGI SEPULUH NOPEMBER</div>
-            <div class="institution-details">
-                Fakultas Teknologi Elektro dan Informatika Cerdas<br>
-                Departemen Teknik Informatika<br>
-                Jl. Raya ITS, Keputih, Sukolilo, Surabaya 60111
-            </div>
-        </div>
-
-        <div class="contact-info">
-            <div><strong>Telp:</strong> (031) 5994251</div>
-            <div><strong>Fax:</strong> (031) 5966205</div>
-            <div><strong>Email:</strong> informatics@its.ac.id</div>
-        </div>
-    </div> --}}
     <div class="logo-section ">
         <p>DEPARTEMEN TEKNIK ELEKTRO<br>
             FTEIC - ITS</p>
     </div>
 
+    <!-- New page: company recipient & notes (starts on a new page in the PDF) -->
+
+
     <!-- Document Title -->
     <div class="document-title">
-        <h1>FORMULIR PENGAJUAN KERJA PRAKTEK</h1>
+        <h2>FORMULIR PENGAJUAN KERJA PRAKTEK</h2>
     </div>
 
 
@@ -217,23 +146,36 @@
             <table class="members-table">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>NRP</th>
-                        <th>Jumlah SKS Tempuh</th>
-                        <th>Tanda Tangan</th>
-
+                        <th style="text-align: center;">No</th>
+                        <th style="text-align: center;">Nama</th>
+                        <th style="text-align: center;">NRP</th>
+                        <th style="text-align: center;">Jumlah SKS<br>Tempuh</th>
+                        <th style="text-align: center;">Tanda Tangan</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($application->members as $index => $member)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
+                            <td style="text-align: center;">{{ $index + 1 }}</td>
 
                             <td>{{ $member->student->nama_resmi ?? 'Unknown' }}</td>
-                            <td>{{ $member->student->nrp ?? 'N/A' }}</td>
-                            <td>{{ $member->student->jumlah_sks ?? 0 }}</td>
-                            <td></td>
+                            <td style="text-align: center;">{{ $member->student->nrp ?? 'N/A' }}</td>
+                            <td style="text-align: center;">{{ $member->student->sks_total ?? 0 }}</td>
+                            <td>
+                                @php
+                                    $memberSignature = null;
+                                @endphp
+                                @if (isset($member->student) && isset($member->student->user) && $member->student->user->activeSignature)
+                                    @php $memberSignature = $member->student->user->activeSignature; @endphp
+                                @endif
+
+                                @if ($memberSignature && ($memberSignature->signature_path ?? false))
+                                    <img src="{{ public_path('storage/' . $memberSignature->signature_path) }}"
+                                        class="signature-image" alt="Tanda Tangan">
+                                @else
+                                    <div style="height: 40px;"></div>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -247,22 +189,6 @@
     <!-- Content -->
     <div class="content-section">
         <table class="content-table">
-            {{-- <tr>
-                <td class="label">Nomor Proposal:</td>
-                <td>APP-{{ $application->id }}</td>
-            </tr> --}}
-            {{-- <tr>
-                <td class="label">Nama Mahasiswa:</td>
-                <td>{{ $application->submittedBy->name }}</td>
-            </tr>
-            <tr>
-                <td class="label">NRP:</td>
-                <td>{{ $application->members->where('role', 'leader')->first()->student->nrp ?? 'N/A' }}</td>
-            </tr> --}}
-            {{-- <tr>
-                <td class="label">Program Studi:</td>
-                <td>Teknik Informatika</td>
-            </tr> --}}
             <tr>
                 <td class="label">Topik :</td>
                 <td>{{ $application->notes }}</td>
@@ -281,20 +207,12 @@
             </tr>
             <tr>
                 <td class="label">Penempatan:</td>
-                <td>{{ $application->placement_division }}</td>
-            </tr>
-            <tr>
-                <td class="label">Divisi:</td>
-                <td>{{ $application->division ?: '-' }}</td>
+                <td>{{ $application->placement_division }} ({{ $application->division ?: '-' }})</td>
             </tr>
             <tr>
                 <td class="label">Tanggal KP:</td>
                 <td>{{ $application->planned_start_date->format('d F Y') }} -
                     {{ $application->planned_end_date->format('d F Y') }}</td>
-            </tr>
-            <tr>
-                <td class="label">Durasi KP:</td>
-                <td>{{ $application->planned_start_date->diffInMonths($application->planned_end_date) }} bulan</td>
             </tr>
 
         </table>
@@ -311,17 +229,66 @@
 
     <!-- Footer with Signature -->
     <div class="footer">
+        <div class="date-info">
+            Surabaya, {{ \Carbon\Carbon::now('Asia/Jakarta')->translatedFormat('d F Y') }}<br>
+            Dosen Pembimbing,
+        </div>
         <div class="signature-section">
-            @if ($signature && $signature->signature_path)
+            @if ($signature && ($signature->signature_path ?? false))
                 <img src="{{ public_path('storage/' . $signature->signature_path) }}" alt="Signature"
                     class="signature-image">
             @else
                 <div style="height: 40px;"></div>
             @endif
             <div class="signature-line"></div>
-            <div class="signature-name">{{ $application->submittedBy->name }}</div>
-            <div>NRP: {{ $application->members->where('role', 'leader')->first()->student->nrp ?? 'N/A' }}</div>
+            <div class="signature-name">{{ $approverName ?? $application->submittedBy->name }}</div>
+            <div>NRP:
+                {{ $approverNip ?? ($application->members->where('role', 'leader')->first()->student->nrp ?? 'N/A') }}
+            </div>
         </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="content-section">
+        <table class="content-table">
+            <tr>
+                <td colspan="2" class="label">*) Pejabat dari perusahaan / instansi surat pengantar KP ditujukan
+                </td>
+
+            </tr>
+            <tr>
+
+                <td colspan="2">
+                    CATATAN :
+                    <div style="margin-bottom:8px;">
+                        <strong>* Tuliskan peserta yang mudah dihubungi :</strong>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr>
+                            <td style="width:18%; vertical-align:top; font-weight:bold;">Nama :</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align:top; font-weight:bold;">Alamat :</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align:top; font-weight:bold;">Telp :</td>
+                            <td></td>
+                        </tr>
+                    </table>
+
+                    <p style="margin-top:10px; margin-bottom:6px;">* Sebelum mengisi formulir ini mahasiswa diwajibkan
+                        membaca Peraturan KP.<br>
+                        (Buku Pedoman / Petunjuk KP)
+                    </p>
+                    <p style="margin:0;">* Menghubungi perusahaan terlebih dahulu untuk mendapatkan informasi dan alamat
+                        tujuan yang jelas</p>
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 

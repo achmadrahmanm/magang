@@ -200,7 +200,7 @@
                 if (proposal.status === 'draft') {
                     var aEdit = document.createElement('a');
                     aEdit.className = 'btn btn-primary';
-                    aEdit.href = '#';
+                    aEdit.href = '/mahasiswa/form-formal-requests';
                     aEdit.innerHTML = '<i class="fas fa-edit"></i> Edit Pengajuan Proposal';
                     buttonsContainer.insertBefore(aEdit, buttonsContainer.firstChild);
                 }
