@@ -14,7 +14,7 @@ class BusinessFieldSeeder extends Seeder
     {
         $businessFields = [
             [
-                'code' => 'technology',
+                'code' => 'Technology',
                 'name' => 'Teknologi Informasi',
                 'name_en' => 'Information Technology',
                 'description' => 'Bidang yang berkaitan dengan pengembangan software, hardware, jaringan, dan sistem informasi',
@@ -27,7 +27,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'finance',
+                'code' => 'Finance',
                 'name' => 'Keuangan & Perbankan',
                 'name_en' => 'Finance & Banking',
                 'description' => 'Bidang yang berkaitan dengan layanan keuangan, perbankan, investasi, dan asuransi',
@@ -40,7 +40,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'manufacturing',
+                'code' => 'Manufacturing',
                 'name' => 'Manufaktur',
                 'name_en' => 'Manufacturing',
                 'description' => 'Bidang industri yang berkaitan dengan produksi barang dan manufaktur',
@@ -53,7 +53,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'healthcare',
+                'code' => 'Healthcare',
                 'name' => 'Kesehatan',
                 'name_en' => 'Healthcare',
                 'description' => 'Bidang yang berkaitan dengan layanan kesehatan, rumah sakit, dan farmasi',
@@ -66,7 +66,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'education',
+                'code' => 'Education',
                 'name' => 'Pendidikan',
                 'name_en' => 'Education',
                 'description' => 'Bidang pendidikan, pelatihan, dan pengembangan sumber daya manusia',
@@ -79,7 +79,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'retail',
+                'code' => 'Retail',
                 'name' => 'Retail & E-commerce',
                 'name_en' => 'Retail & E-commerce',
                 'description' => 'Bidang perdagangan ritel, e-commerce, dan marketplace',
@@ -92,7 +92,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'energy',
+                'code' => 'Energy',
                 'name' => 'Energi & Pertambangan',
                 'name_en' => 'Energy & Mining',
                 'description' => 'Bidang energi, minyak dan gas, pertambangan, dan energi terbarukan',
@@ -105,7 +105,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'transportation',
+                'code' => 'Transportation',
                 'name' => 'Transportasi & Logistik',
                 'name_en' => 'Transportation & Logistics',
                 'description' => 'Bidang transportasi, logistik, pengiriman, dan supply chain',
@@ -118,7 +118,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'construction',
+                'code' => 'Construction',
                 'name' => 'Konstruksi & Properti',
                 'name_en' => 'Construction & Property',
                 'description' => 'Bidang konstruksi, real estate, dan pengembangan properti',
@@ -131,7 +131,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'media',
+                'code' => 'Media',
                 'name' => 'Media & Komunikasi',
                 'name_en' => 'Media & Communication',
                 'description' => 'Bidang media, komunikasi, periklanan, dan industri kreatif',
@@ -144,7 +144,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'government',
+                'code' => 'Government',
                 'name' => 'Pemerintahan',
                 'name_en' => 'Government',
                 'description' => 'Instansi pemerintah, BUMN, dan lembaga publik',
@@ -157,7 +157,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'consulting',
+                'code' => 'Consulting',
                 'name' => 'Konsultan & Jasa Profesional',
                 'name_en' => 'Consulting & Professional Services',
                 'description' => 'Bidang konsultasi, jasa profesional, dan layanan bisnis',
@@ -170,7 +170,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'agriculture',
+                'code' => 'Agriculture',
                 'name' => 'Pertanian & Perikanan',
                 'name_en' => 'Agriculture & Fisheries',
                 'description' => 'Bidang pertanian, perkebunan, perikanan, dan agribisnis',
@@ -183,7 +183,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'tourism',
+                'code' => 'Tourism',
                 'name' => 'Pariwisata & Perhotelan',
                 'name_en' => 'Tourism & Hospitality',
                 'description' => 'Bidang pariwisata, perhotelan, dan industri jasa wisata',
@@ -196,7 +196,7 @@ class BusinessFieldSeeder extends Seeder
                 ]
             ],
             [
-                'code' => 'other',
+                'code' => 'Other',
                 'name' => 'Lainnya',
                 'name_en' => 'Other',
                 'description' => 'Bidang usaha lainnya yang tidak termasuk dalam kategori di atas',
@@ -211,8 +211,11 @@ class BusinessFieldSeeder extends Seeder
         ];
 
         foreach ($businessFields as $field) {
-            BusinessField::create($field);
-            $this->command->info("Created business field: {$field['name']} ({$field['code']})");
+            BusinessField::updateOrCreate(
+                ['code' => $field['code']], // Find by code
+                $field // Update with all fields
+            );
+            $this->command->info("Created/Updated business field: {$field['name']} ({$field['code']})");
         }
         
         $this->command->info("Created " . count($businessFields) . " business fields");

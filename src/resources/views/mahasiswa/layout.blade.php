@@ -16,6 +16,8 @@
     <!-- Font Awesome 6.5 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <!-- Universal CSS -->
+    <link rel="stylesheet" href="{{ asset('css/universal.css') }}">
     <!-- Mahasiswa Theme CSS -->
     <link rel="stylesheet" href="{{ asset('css/mahasiswa.css') }}">
 </head>
@@ -138,7 +140,8 @@
                             </div>
                             <div class="dropdown-user-info">
                                 <div class="dropdown-user-name">{{ Auth::user()->name }}</div>
-                                <div class="dropdown-user-id">ID: {{ Auth::user()->identity->user_id ?? 'N/A' }}</div>
+                                <div class="dropdown-user-id">NRP : {{ Auth::user()->identity->user_id ?? 'N/A' }}
+                                </div>
                                 <div class="dropdown-user-role">{{ ucfirst(Auth::user()->role) }}</div>
                             </div>
                         </div>

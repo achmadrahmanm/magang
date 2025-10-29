@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Application;
 use App\Models\BusinessField;
+use App\Models\Lecturer;
 use App\Models\User;
 use App\Models\UserSignature;
 use Illuminate\Support\Facades\Auth;
@@ -98,11 +99,14 @@ class DosenController extends Controller
 
     public function showAvailableReviewers()
     {
-        $reviewers = User::where('role', 'dosen')
-            ->where('id', '!=', Auth::id())
-            ->with('identity')
+        $reviewers = Lecturer::with(['user.identity'])
+            ->whereHas('user', function ($query) {
+                $query->where('role', 'dosen')
+                    ->where('id', '!=', Auth::id());
+            })
             ->get()
-            ->map(function ($user) {
+            ->map(function ($lecturer) {
+                $user = $lecturer->user;
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -156,28 +160,34 @@ class DosenController extends Controller
     {
         $user = Auth::user();
 
-        // Get approved applications by this dosen
-        $approvedApplications = Application::with(['submittedBy', 'members.student', 'businessField'])
+        // Get all reviewed applications by this dosen
+        $reviewedApplications = Application::with(['submittedBy', 'members.student', 'businessField'])
             ->where('reviewed_by', $user->id)
-            ->where('status', 'approved')
+            ->whereIn('status', ['approved', 'rejected', 'reviewing'])
             ->latest('reviewed_at')
             ->get();
 
         // Statistics
-        $totalApproved = $approvedApplications->count();
-        $approvedThisMonth = $approvedApplications->where('reviewed_at', '>=', now()->startOfMonth())->count();
-        $totalReviewed = Application::where('reviewed_by', $user->id)->count();
-        $successRate = $totalReviewed > 0 ? round(($totalApproved / $totalReviewed) * 100, 1) : 0;
+        $totalReviewed = $reviewedApplications->count();
+        $totalApproved = $reviewedApplications->where('status', 'approved')->count();
+        $totalRejected = $reviewedApplications->where('status', 'rejected')->count();
+        $totalReviewing = $reviewedApplications->where('status', 'reviewing')->count();
+        $approvedThisMonth = $reviewedApplications->where('status', 'approved')
+            ->where('reviewed_at', '>=', now()->startOfMonth())->count();
+        $successRate = ($totalApproved + $totalRejected) > 0 ? round(($totalApproved / ($totalApproved + $totalRejected)) * 100, 1) : 0;
 
-        // Recent approval activity
-        $recentApprovals = $approvedApplications->take(10);
+        // Recent review activity (last 10)
+        $recentReviews = $reviewedApplications->take(10);
 
         return view('dosen.approvals', compact(
-            'approvedApplications',
+            'reviewedApplications',
+            'totalReviewed',
             'totalApproved',
+            'totalRejected',
+            'totalReviewing',
             'approvedThisMonth',
             'successRate',
-            'recentApprovals'
+            'recentReviews'
         ));
     }
 

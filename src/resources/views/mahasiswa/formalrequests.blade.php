@@ -174,6 +174,7 @@
                     else if (proposal.status === 'submitted') cls += ' status-submitted';
                     else if (proposal.status === 'approved') cls += ' status-approved';
                     else if (proposal.status === 'rejected') cls += ' status-rejected';
+                    else if (proposal.status === 'reviewing') cls += ' status-reviewing';
                     statusEl.className = cls;
                 }
 

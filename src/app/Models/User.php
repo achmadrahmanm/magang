@@ -66,6 +66,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the lecturer profile for this user
+     */
+    public function lecturer()
+    {
+        return $this->hasOne(Lecturer::class);
+    }
+
+    /**
      * Get all signatures for this user
      */
     public function signatures()

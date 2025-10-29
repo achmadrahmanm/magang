@@ -152,35 +152,33 @@
                             <tr>
                                 <th>Mahasiswa</th>
                                 <th>Institusi</th>
-                                <th>Status</th>
-                                <th>Tanggal</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Tanggal</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($recentApplications ?? [] as $application)
-                            <tr>
-                                <td>{{ $application->submittedBy->name ?? 'N/A' }}</td>
-                                <td>{{ $application->institution_name ?? 'N/A' }}</td>
-                                <td>
-                                    <span class="badge
-                                        @if($application->status == 'approved') text-bg-success
-                                        @elseif($application->status == 'submitted') text-bg-warning
-                                        @else text-bg-danger @endif">
-                                        {{ ucfirst($application->status ?? 'unknown') }}
-                                    </span>
-                                </td>
-                                <td>{{ $application->created_at->format('d M Y') }}</td>
-                                <td>
-                                    <a href="{{ route('dosen.applications.show', $application->id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> Lihat
-                                    </a>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td>{{ $application->submittedBy->name ?? 'N/A' }}</td>
+                                    <td>{{ $application->institution_name ?? 'N/A' }}</td>
+                                    <td>
+                                        <div class="text-center status-badge status-{{ $application->status }}">
+                                            {{ ucfirst($application->status ?? 'unknown') }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ $application->created_at->format('d M Y') }}</td>
+                                    <td>
+                                        <a href="{{ route('dosen.applications.show', $application->id) }}"
+                                            class="btn btn-outline">
+                                            <i class="fas fa-eye"></i> Lihat
+                                        </a>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted">Belum ada aplikasi</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Belum ada aplikasi</td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>

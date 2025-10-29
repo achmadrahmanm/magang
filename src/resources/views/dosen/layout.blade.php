@@ -17,6 +17,8 @@
     <!-- Font Awesome 6.5 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <!-- Universal CSS -->
+    <link rel="stylesheet" href="{{ asset('css/universal.css') }}">
     <!-- Dosen Theme CSS -->
     <link rel="stylesheet" href="{{ asset('css/dosen.css') }}">
 </head>
@@ -33,7 +35,7 @@
                 {{ Auth::user()->name }}
             </div>
             <div class="sidebar-user-id">
-                Role: Dosen
+                NIP: {{ Auth::user()->lecturer->nip ?? 'N/A' }}
             </div>
         </div>
 
@@ -50,7 +52,7 @@
                 <a href="{{ route('dosen.applications') }}"
                     class="nav-link {{ request()->routeIs('dosen.applications') ? 'active' : '' }}">
                     <i class="fas fa-book"></i>
-                    <span class="nav-text">Applications</span>
+                    <span class="nav-text">Applications Submission</span>
                 </a>
             </li>
 
@@ -58,7 +60,7 @@
                 <a href="{{ route('dosen.approvals') }}"
                     class="nav-link {{ request()->routeIs('dosen.approvals') ? 'active' : '' }}">
                     <i class="fas fa-check-circle"></i>
-                    <span class="nav-text">Approvals</span>
+                    <span class="nav-text">Applications Review</span>
                 </a>
             </li>
 
@@ -104,7 +106,7 @@
                         </div>
                         <div class="user-details">
                             <div class="user-name">{{ Auth::user()->name }}</div>
-                            <div class="user-id">{{ Auth::user()->identity->user_id ?? 'N/A' }}</div>
+                            <div class="user-id">{{ Auth::user()->lecturer->nip ?? 'N/A' }}</div>
                         </div>
                         <i class="fas fa-chevron-down dropdown-arrow"></i>
                     </button>
@@ -120,7 +122,7 @@
                             </div>
                             <div class="dropdown-user-info">
                                 <div class="dropdown-user-name">{{ Auth::user()->name }}</div>
-                                <div class="dropdown-user-id">ID: {{ Auth::user()->identity->user_id ?? 'N/A' }}</div>
+                                <div class="dropdown-user-id">NIP : {{ Auth::user()->lecturer->nip ?? 'N/A' }}</div>
                                 <div class="dropdown-user-role">{{ ucfirst(Auth::user()->role) }}</div>
                             </div>
                         </div>

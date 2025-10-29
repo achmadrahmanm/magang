@@ -195,10 +195,10 @@ class Application extends Model
     {
         return match ($this->status) {
             'draft' => 'Draft',
-            'submitted' => 'Diajukan',
-            'reviewing' => 'Dalam Review',
-            'approved' => 'Disetujui',
-            'rejected' => 'Ditolak',
+            'submitted' => 'Submitted',
+            'reviewing' => 'Reviewing',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
             default => 'Unknown'
         };
     }

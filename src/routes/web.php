@@ -74,13 +74,15 @@ Route::middleware('auth')->group(function () {
 
     // Dosen specific routes
     Route::get('/dosen/dashboard', [DosenController::class, 'dashboard'])->name('dosen.dashboard');
+    Route::get('/dosen/available-reviewer', [DosenController::class, 'showAvailableReviewers'])->name('dosen.applications.available-reviewer');
+    Route::patch('/dosen/applications/{application}/choose-reviewer', [DosenController::class, 'chooseReviewer'])->name('dosen.applications.choose.reviewer');
+    
     Route::get('/dosen/applications', [DosenController::class, 'applications'])->name('dosen.applications');
     Route::get('/dosen/applications/{application}', [DosenController::class, 'showApplication'])->name('dosen.applications.show');
-    Route::get('/dosen/applications/available-reviewer', [DosenController::class, 'showAvailableReviewers'])->name('dosen.applications.available.reviewer');
-    Route::patch('/dosen/applications/{application}/choose-reviewer', [DosenController::class, 'chooseReviewer'])->name('dosen.applications.choose.reviewer');
     Route::patch('/dosen/applications/{application}/approve', [DosenController::class, 'approveApplication'])->name('dosen.applications.approve');
     Route::patch('/dosen/applications/{application}/reject', [DosenController::class, 'rejectApplication'])->name('dosen.applications.reject');
     Route::get('/dosen/applications/{application}/download', [DosenController::class, 'downloadApplication'])->name('dosen.applications.download');
+    
     Route::get('/dosen/approvals', [DosenController::class, 'approvals'])->name('dosen.approvals');
     Route::get('/dosen/settings', [DosenController::class, 'settings'])->name('dosen.settings');
     Route::patch('/dosen/settings/update', [DosenController::class, 'updateSettings'])->name('dosen.settings.update');

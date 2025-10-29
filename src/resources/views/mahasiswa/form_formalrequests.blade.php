@@ -291,7 +291,7 @@
                                         <label class="form-label-modern">Angkatan</label>
                                         <input type="number" class="form-control form-control-modern"
                                             name="members[0][year]" placeholder="2023" min="2015" max="2030"
-                                            required>
+                                            value="{{ Auth::user()->student->angkatan ?? '' }}" required>
                                     </div>
                                 </div>
                             </div>
