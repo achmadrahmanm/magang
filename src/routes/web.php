@@ -81,6 +81,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dosen/applications/{application}', [DosenController::class, 'showApplication'])->name('dosen.applications.show');
     Route::patch('/dosen/applications/{application}/approve', [DosenController::class, 'approveApplication'])->name('dosen.applications.approve');
     Route::patch('/dosen/applications/{application}/reject', [DosenController::class, 'rejectApplication'])->name('dosen.applications.reject');
+    Route::get('/dosen/applications/{application}/view-pdf', [DosenController::class, 'viewApplication'])->name('dosen.applications.view');
     Route::get('/dosen/applications/{application}/download', [DosenController::class, 'downloadApplication'])->name('dosen.applications.download');
     
     Route::get('/dosen/approvals', [DosenController::class, 'approvals'])->name('dosen.approvals');

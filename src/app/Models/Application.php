@@ -70,6 +70,14 @@ class Application extends Model
     {
         return $this->belongsTo(BusinessField::class, 'business_field', 'code');
     }
+
+    /**
+     * Get the company for this application
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Company::class);
+    }
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, 'application_members')

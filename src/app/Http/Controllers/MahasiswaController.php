@@ -880,11 +880,20 @@ class MahasiswaController extends Controller
                 abort(403, 'Anda tidak memiliki akses ke proposal ini');
             }
 
-
-            // Determine approver signature: prefer selected lecturer's active signature, otherwise fall back to submitter or auth user
+              // Initialize signature variables
             $approverSignature = null;
             $approverName = null;
             $approverNip = null;
+
+            // Get reviewer's active signature if status is reviewing or approved
+            if (in_array($application->status, ['reviewing', 'approved']) && $application->reviewed_by) {
+                $reviewer = $application->reviewedBy;
+                $lecturer = $reviewer->lecturer;
+
+                $approverSignature = $reviewer->activeSignature;
+                $approverName = $lecturer ? $lecturer->nama_resmi : $reviewer->name;
+                $approverNip = $lecturer ? $lecturer->nip : null;
+            }
 
             // Lecturer data is now empty as per requirements
             // No lecturer lookup needed

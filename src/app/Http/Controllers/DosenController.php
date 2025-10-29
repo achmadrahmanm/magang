@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DosenController extends Controller
 {
@@ -54,12 +55,15 @@ class DosenController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('institution_name', 'like', "%{$search}%")
+                    ->orWhereHas('company', function ($companyQuery) use ($search) {
+                        $companyQuery->where('name', 'like', "%{$search}%");
+                    })
                     ->orWhereHas('submittedBy', function ($userQuery) use ($search) {
                         $userQuery->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");
                     })
                     ->orWhereHas('members.student', function ($studentQuery) use ($search) {
-                        $studentQuery->where('name', 'like', "%{$search}%");
+                        $studentQuery->where('nama_resmi', 'like', "%{$search}%");
                     });
             });
         }
@@ -75,6 +79,7 @@ class DosenController extends Controller
         return view('dosen.application-detail', compact('application'));
     }
 
+    
     public function approveApplication(Application $application)
     {
         $application->update([
@@ -101,8 +106,7 @@ class DosenController extends Controller
     {
         $reviewers = Lecturer::with(['user.identity'])
             ->whereHas('user', function ($query) {
-                $query->where('role', 'dosen')
-                    ->where('id', '!=', Auth::id());
+                $query->where('role', 'dosen');
             })
             ->get()
             ->map(function ($lecturer) {
@@ -505,4 +509,52 @@ class DosenController extends Controller
             return back()->with('error', 'Gagal mengunduh signature');
         }
     }
+
+    /**
+     * View application PDF inline
+     */
+    public function viewApplication(Application $application)
+    {
+        try {
+            // Check if application has a reviewer assigned
+            if (!$application->reviewed_by) {
+                abort(403, 'Application belum memiliki reviewer yang ditunjuk');
+            }
+
+            // Load application with necessary relationships
+            $application->load(['submittedBy', 'members.student', 'documents', 'businessField', 'reviewedBy.lecturer']);
+
+            // Get reviewer details
+            $reviewer = $application->reviewedBy;
+            $lecturer = $reviewer->lecturer;
+
+            // Get reviewer's active signature
+            $approverSignature = $reviewer->activeSignature;
+            $approverName = $lecturer ? $lecturer->nama_resmi : $reviewer->name;
+            $approverNip = $lecturer ? $lecturer->nip : null;
+
+            // Generate PDF
+            $pdf = Pdf::loadView('pdf.proposal', [
+                'application' => $application,
+                'signature' => $approverSignature,
+                'approverName' => $approverName,
+                'approverNip' => $approverNip,
+            ]);
+
+            // Set paper size and orientation
+            $pdf->setPaper('a4', 'portrait');
+
+            // Return PDF as stream (inline display)
+            return $pdf->stream('Surat_Pengantar_Proposal_APP-' . $application->id . '.pdf');
+        } catch (\Exception $e) {
+            \Log::error('Error generating application PDF', [
+                'application_id' => $application->id,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            abort(500, 'Gagal menghasilkan PDF aplikasi');
+        }
+    }
+
 }
