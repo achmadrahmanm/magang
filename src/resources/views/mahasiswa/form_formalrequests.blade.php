@@ -201,69 +201,6 @@
                         </div>
                     </div>
 
-                    <!-- Lecturer Information Section -->
-                    <div class="card-modern mb-4">
-                        <div class="card-header-gradient mb-4 rounded">
-                            <h5 class="mb-0">
-                                <i class="fas fa-user-tie"></i>
-                                Informasi Dosen Pembimbing
-                            </h5>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-modern" for="lecturer_nip">
-                                    <i class="fas fa-id-card text-primary"></i>
-                                    NIP Dosen Pembimbing <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control form-control-modern" id="lecturer_nip"
-                                        name="lecturer_nip" placeholder="Masukkan NIP dosen..." required>
-                                    <button type="button" class="btn btn-outline-primary" id="checkNipBtn">
-                                        <i class="fas fa-search"></i> Cek NIP
-                                    </button>
-                                </div>
-                                <div class="form-text">Masukkan NIP dosen pembimbing untuk memverifikasi data</div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-modern" for="lecturer_name">
-                                    <i class="fas fa-user text-primary"></i>
-                                    Nama Lengkap
-                                </label>
-                                <input type="text" class="form-control form-control-modern" id="lecturer_name"
-                                    name="lecturer_name" readonly>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-modern" for="lecturer_email">
-                                    <i class="fas fa-envelope text-primary"></i>
-                                    Email Kampus
-                                </label>
-                                <input type="email" class="form-control form-control-modern" id="lecturer_email"
-                                    name="lecturer_email" readonly>
-                            </div>
-
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label-modern" for="lecturer_prodi">
-                                    <i class="fas fa-graduation-cap text-primary"></i>
-                                    Program Studi
-                                </label>
-                                <input type="text" class="form-control form-control-modern" id="lecturer_prodi"
-                                    name="lecturer_prodi" readonly>
-                            </div>
-
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label-modern" for="lecturer_fakultas">
-                                    <i class="fas fa-university text-primary"></i>
-                                    Fakultas
-                                </label>
-                                <input type="text" class="form-control form-control-modern" id="lecturer_fakultas"
-                                    name="lecturer_fakultas" readonly>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Proposal Document Section -->
                     <div class="card-modern mb-4">
                         <div class="card-header-gradient mb-4 rounded">
@@ -580,66 +517,6 @@
                 loadDraftFromServer();
             });
 
-            // NIP Checker functionality
-            document.getElementById('checkNipBtn').addEventListener('click', function() {
-                checkNip();
-            });
-
-            // Function to check NIP
-            function checkNip() {
-                const nipInput = document.getElementById('lecturer_nip');
-                const nip = nipInput.value.trim();
-
-                if (!nip) {
-                    showNotification('warning', 'Peringatan', 'Silakan masukkan NIP terlebih dahulu');
-                    return;
-                }
-
-                const btn = document.getElementById('checkNipBtn');
-                const originalText = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memverifikasi...';
-
-                fetch('{{ route('mahasiswa.check-nip') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            nip: nip
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Fill lecturer details
-                            document.getElementById('lecturer_name').value = data.data.nama_resmi;
-                            document.getElementById('lecturer_email').value = data.data.email_kampus;
-                            document.getElementById('lecturer_prodi').value = data.data.prodi;
-                            document.getElementById('lecturer_fakultas').value = data.data.fakultas;
-
-                            showNotification('success', 'NIP Ditemukan', 'Data dosen berhasil diverifikasi');
-                        } else {
-                            // Clear fields
-                            document.getElementById('lecturer_name').value = '';
-                            document.getElementById('lecturer_email').value = '';
-                            document.getElementById('lecturer_prodi').value = '';
-                            document.getElementById('lecturer_fakultas').value = '';
-
-                            showNotification('error', 'NIP Tidak Ditemukan', data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error checking NIP:', error);
-                        showNotification('error', 'Terjadi Kesalahan', 'Gagal memverifikasi NIP');
-                    })
-                    .finally(() => {
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                    });
-            }
-
             // Function to check NRP for members
             function checkNrp(memberElement) {
                 const nrpInput = memberElement.querySelector('input[name$="[student_id]"]');
@@ -735,7 +612,6 @@
                 document.getElementById('division').value = draft.division || '';
                 document.getElementById('start_date').value = draft.start_date || '';
                 document.getElementById('duration').value = draft.duration || '';
-                document.getElementById('lecturer_nip').value = draft.lecturer_nip || '';
 
                 // Clear existing additional members (keep leader)
                 const membersContainer = document.getElementById('membersContainer');

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MahasiswaController;
+use App\Http\Controllers\DosenController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -42,7 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/settings', [AuthController::class, 'mahasiswaSettings'])->name('mahasiswa.settings');
     Route::get('/mahasiswa/profile', [AuthController::class, 'mahasiswaProfile'])->name('mahasiswa.profile');
 
-     // Mahasiswa Application routes (formerly Proposal routes)
+    // Mahasiswa Application routes (formerly Proposal routes)
     Route::post('/mahasiswa/store-proposal', [MahasiswaController::class, 'storeProposal'])->name('mahasiswa.store-proposal');
     Route::post('/mahasiswa/save-draft', [MahasiswaController::class, 'saveDraft'])->name('mahasiswa.save-draft');
     Route::get('/mahasiswa/load-draft', [MahasiswaController::class, 'loadDraft'])->name('mahasiswa.load-draft');
@@ -71,4 +72,26 @@ Route::middleware('auth')->group(function () {
     Route::post('/mahasiswa/check-nip', [MahasiswaController::class, 'checkNip'])->name('mahasiswa.check-nip');
     Route::post('/mahasiswa/check-nrp', [MahasiswaController::class, 'checkNrp'])->name('mahasiswa.check-nrp');
 
+    // Dosen specific routes
+    Route::get('/dosen/dashboard', [DosenController::class, 'dashboard'])->name('dosen.dashboard');
+    Route::get('/dosen/applications', [DosenController::class, 'applications'])->name('dosen.applications');
+    Route::get('/dosen/applications/{application}', [DosenController::class, 'showApplication'])->name('dosen.applications.show');
+    Route::get('/dosen/applications/available-reviewer', [DosenController::class, 'showAvailableReviewers'])->name('dosen.applications.available.reviewer');
+    Route::patch('/dosen/applications/{application}/choose-reviewer', [DosenController::class, 'chooseReviewer'])->name('dosen.applications.choose.reviewer');
+    Route::patch('/dosen/applications/{application}/approve', [DosenController::class, 'approveApplication'])->name('dosen.applications.approve');
+    Route::patch('/dosen/applications/{application}/reject', [DosenController::class, 'rejectApplication'])->name('dosen.applications.reject');
+    Route::get('/dosen/applications/{application}/download', [DosenController::class, 'downloadApplication'])->name('dosen.applications.download');
+    Route::get('/dosen/approvals', [DosenController::class, 'approvals'])->name('dosen.approvals');
+    Route::get('/dosen/settings', [DosenController::class, 'settings'])->name('dosen.settings');
+    Route::patch('/dosen/settings/update', [DosenController::class, 'updateSettings'])->name('dosen.settings.update');
+    Route::patch('/dosen/settings/password', [DosenController::class, 'updatePassword'])->name('dosen.settings.password');
+    Route::patch('/dosen/settings/notifications', [DosenController::class, 'updateNotifications'])->name('dosen.settings.notifications');
+    Route::patch('/dosen/settings/preferences', [DosenController::class, 'updatePreferences'])->name('dosen.settings.preferences');
+
+    Route::get('/dosen/signature', [DosenController::class, 'showSignaturePage'])->name('dosen.signature');
+    Route::post('/dosen/save-signature', [DosenController::class, 'saveSignature'])->name('dosen.save-signature');
+    Route::get('/dosen/get-signatures', [DosenController::class, 'getUserSignatures'])->name('dosen.get-signatures');
+    Route::delete('/dosen/signature/{signatureId}', [DosenController::class, 'deleteSignature'])->name('dosen.delete-signature');
+    Route::post('/dosen/signature/{signatureId}/set-active', [DosenController::class, 'setActiveSignature'])->name('dosen.set-active-signature');
+    Route::get('/dosen/signature/{signatureId}/download', [DosenController::class, 'downloadSignature'])->name('dosen.download-signature');
 });

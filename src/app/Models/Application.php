@@ -25,7 +25,6 @@ class Application extends Model
         'planned_end_date',
         'purpose_letter_path',
         'notes',
-        'lecturer_nip',
         'status',
         'status_note',
         'reviewed_by',
@@ -65,8 +64,12 @@ class Application extends Model
     }
 
     /**
-     * Get students through application members
+     * Get the business field for this application
      */
+    public function businessField(): BelongsTo
+    {
+        return $this->belongsTo(BusinessField::class, 'business_field', 'code');
+    }
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, 'application_members')
@@ -83,8 +86,13 @@ class Application extends Model
     }
 
     /**
-     * Get all documents for this application
+     * Get the student (leader) for display purposes
      */
+    public function getStudentAttribute()
+    {
+        $leader = $this->leader();
+        return $leader ? $leader->student : null;
+    }
     public function documents(): HasMany
     {
         return $this->hasMany(ApplicationDocument::class);

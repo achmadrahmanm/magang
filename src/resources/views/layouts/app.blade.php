@@ -13,6 +13,9 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=poppins:400,500,600,700"
         rel="stylesheet" />
 
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- Base Styles -->
     <style>
         * {

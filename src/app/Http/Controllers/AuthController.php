@@ -263,7 +263,7 @@ class AuthController extends Controller
      */
     public function dosenDashboard()
     {
-        return view('dashboards.dosen');
+        return redirect()->route('dosen.dashboard');
     }
 
     /**

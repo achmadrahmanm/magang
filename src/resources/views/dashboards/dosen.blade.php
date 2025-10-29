@@ -1,466 +1,276 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('dosen.layout')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dosen Dashboard - Laravel App</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+@section('title', 'Dosen Dashboard')
+@section('page-title', 'Dashboard Overview')
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-            min-height: 100vh;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
-            padding: 1rem 2rem;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            font-size: 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .role-badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-name {
-            font-weight: 500;
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .main-content {
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .welcome-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-            text-align: center;
-            border-left: 5px solid #6f42c1;
-        }
-
-        .welcome-card h2 {
-            color: #333;
-            margin-bottom: 0.5rem;
-            font-size: 2rem;
-        }
-
-        .welcome-card p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            transition: transform 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #6f42c1, #6610f2);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card h3 {
-            color: #333;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #6f42c1;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-description {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .dosen-sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-
-        .dosen-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .dosen-section h3 {
-            color: #333;
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .dosen-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border: 1px solid #e1e5e9;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .dosen-item:hover {
-            background: #f8f9fa;
-            border-color: #6f42c1;
-        }
-
-        .dosen-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .dosen-icon {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #6f42c1, #6610f2);
-            color: white;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            font-size: 1.2rem;
-        }
-
-        .dosen-content {
-            flex: 1;
-        }
-
-        .dosen-title {
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .dosen-desc {
-            color: #666;
-            font-size: 0.85rem;
-        }
-
-        .class-indicator {
-            padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: auto;
-        }
-
-        .class-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .class-scheduled {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .class-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .class-grading {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                padding: 1rem;
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .dosen-sections {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="header">
-        <div>
-            <h1>
-                👨‍🏫 Lecturer Dashboard
-                <span class="role-badge">DOSEN</span>
-            </h1>
-        </div>
-        <div class="user-info">
-            <span class="user-name">{{ Auth::user()->name }}</span>
-            <form method="POST" action="{{ route('logout.post') }}" style="display: inline;">
-                @csrf
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
+@section('content')
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+        <div class="welcome-content">
+            <div class="logo-container">
+                <img src="{{ asset('icons/logo.svg') }}" alt="Logo" class="welcome-logo">
+            </div>
+            <div class="text-content">
+                <h2>Halo {{ Auth::user()->name }}!</h2>
+                <p>Selamat datang di Portal Pengajuan Kerja Praktek - Elektro ITS</p>
+            </div>
         </div>
     </div>
 
-    <div class="main-content">
-        <div class="welcome-card">
-            <h2>Welcome, Professor!</h2>
-            <p>Manage your courses, students, and academic activities</p>
+    <!-- Applications Overview -->
+    <div class="assignments-list mb-4">
+        <!-- Recent Applications -->
+        <div class="assignment-card"
+            style="border-left: 4px solid #8A2BE2; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+            <div class="assignment-header pt-2 pb-1">
+                <div class="assignment-info my-auto">
+                    <div class="assignment-title">
+                        Aplikasi Terbaru
+                    </div>
+                </div>
+                <div class="assignment-status">
+                    <div class="status-badge status-draft">{{ $recentApplications->count() ?? 0 }} Aplikasi</div>
+                    <div class="due-date">{{ now()->format('d M Y') }}</div>
+                </div>
+            </div>
+            <div class="assignment-body py-3">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ asset('icons/speaker.svg') }}" alt="Applications" class="mx-3 my-auto"
+                        style="width: 54px; height: 54px;">
+                    <div class="assignment-description mb-0">
+                        Review Aplikasi Kerja Praktik Mahasiswa
+                        <br>
+                        <span>Ada {{ $pendingApplications ?? 0 }} aplikasi menunggu persetujuan Anda</span>
+                    </div>
+                </div>
+
+                <div class="assignment-actions">
+                    <div class="action-buttons">
+                        <a href="{{ route('dosen.applications') }}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> Lihat Semua Aplikasi
+                        </a>
+                        <a href="{{ route('dosen.approvals') }}" class="btn btn-outline">
+                            <i class="fas fa-check-circle"></i> Lihat Persetujuan
+                        </a>
+                    </div>
+                    <div class="progress-indicator">
+                        <i class="fas fa-clock"></i> Last Update : {{ now()->diffForHumans() }}
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Active Courses</h3>
-                <div class="stat-number">4</div>
-                <div class="stat-description">This semester</div>
+        <!-- Quick Stats Row -->
+        <div class="row m-0">
+            <div class="assignment-card col me-2"
+                style="border-left: 4px solid #007bff; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Total Aplikasi
+                        </div>
+                    </div>
+                </div>
+                <div class="assignment-body pt-2 pb-2 text-center">
+                    <div class="stat-number" style="font-size: 32px; color: #007bff;">
+                        {{ $totalApplications ?? 0 }}
+                    </div>
+                    <div class="stat-description">Aplikasi Masuk</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3>Total Students</h3>
-                <div class="stat-number">156</div>
-                <div class="stat-description">Across all courses</div>
+
+            <div class="assignment-card col me-2"
+                style="border-left: 4px solid #28a745; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Disetujui
+                        </div>
+                    </div>
+                </div>
+                <div class="assignment-body pt-2 pb-2 text-center">
+                    <div class="stat-number" style="font-size: 32px; color: #28a745;">
+                        {{ $approvedApplications ?? 0 }}
+                    </div>
+                    <div class="stat-description">Aplikasi Disetujui</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3>Pending Grades</h3>
-                <div class="stat-number">23</div>
-                <div class="stat-description">Need to be graded</div>
+
+            <div class="assignment-card col me-2"
+                style="border-left: 4px solid #ffc107; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Menunggu
+                        </div>
+                    </div>
+                </div>
+                <div class="assignment-body pt-2 pb-2 text-center">
+                    <div class="stat-number" style="font-size: 32px; color: #ffc107;">
+                        {{ $pendingApplications ?? 0 }}
+                    </div>
+                    <div class="stat-description">Perlu Review</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3>Research Projects</h3>
-                <div class="stat-number">3</div>
-                <div class="stat-description">Active projects</div>
+
+            <div class="assignment-card col me-2"
+                style="border-left: 4px solid #dc3545; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                <div class="assignment-header pt-2 pb-1">
+                    <div class="assignment-info my-auto">
+                        <div class="assignment-title">
+                            Ditolak
+                        </div>
+                    </div>
+                </div>
+                <div class="assignment-body pt-2 pb-2 text-center">
+                    <div class="stat-number" style="font-size: 32px; color: #dc3545;">
+                        {{ $rejectedApplications ?? 0 }}
+                    </div>
+                    <div class="stat-description">Aplikasi Ditolak</div>
+                </div>
             </div>
         </div>
 
-        <div class="dosen-sections">
-            <div class="dosen-section">
-                <h3>📚 My Courses</h3>
-                <div class="dosen-item">
-                    <div class="dosen-icon">💻</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Web Programming</div>
-                        <div class="dosen-desc">CS301 - 45 students - Semester 5</div>
+        <!-- Recent Applications Table -->
+        <div class="assignment-card"
+            style="border-left: 4px solid #17a2b8; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+            <div class="assignment-header pt-2 pb-1">
+                <div class="assignment-info my-auto">
+                    <div class="assignment-title">
+                        Aplikasi Terbaru
                     </div>
-                    <div class="class-indicator class-active">Active</div>
                 </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">🗄️</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Database Systems</div>
-                        <div class="dosen-desc">CS401 - 38 students - Semester 7</div>
-                    </div>
-                    <div class="class-indicator class-active">Active</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📊</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Data Mining</div>
-                        <div class="dosen-desc">CS501 - 28 students - Semester 9</div>
-                    </div>
-                    <div class="class-indicator class-scheduled">Scheduled</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">🔬</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Research Seminar</div>
-                        <div class="dosen-desc">CS601 - 15 students - Semester 11</div>
-                    </div>
-                    <div class="class-indicator class-active">Active</div>
+                <div class="assignment-status">
+                    <div class="status-badge status-draft">{{ $recentApplications->count() ?? 0 }} Item</div>
+                    <div class="due-date">{{ now()->format('d M Y') }}</div>
                 </div>
             </div>
-
-            <div class="dosen-section">
-                <h3>📝 Grading & Assessment</h3>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📋</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Midterm Exams</div>
-                        <div class="dosen-desc">Web Programming - 12 exams pending</div>
-                    </div>
-                    <div class="class-indicator class-grading">Grading</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📄</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Project Submissions</div>
-                        <div class="dosen-desc">Database Systems - 8 projects to review</div>
-                    </div>
-                    <div class="class-indicator class-pending">Review</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">✅</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Assignment Grading</div>
-                        <div class="dosen-desc">Data Mining - 3 assignments pending</div>
-                    </div>
-                    <div class="class-indicator class-grading">Grading</div>
-                </div>
-            </div>
-
-            <div class="dosen-section">
-                <h3>📅 Schedule & Activities</h3>
-                <div class="dosen-item">
-                    <div class="dosen-icon">🕐</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Today's Classes</div>
-                        <div class="dosen-desc">2 lectures scheduled for today</div>
-                    </div>
-                    <div class="class-indicator class-active">Today</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">👥</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Office Hours</div>
-                        <div class="dosen-desc">Student consultations - 2:00 PM</div>
-                    </div>
-                    <div class="class-indicator class-scheduled">Scheduled</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📊</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Faculty Meeting</div>
-                        <div class="dosen-desc">Department meeting - Friday 10 AM</div>
-                    </div>
-                    <div class="class-indicator class-pending">Upcoming</div>
-                </div>
-            </div>
-
-            <div class="dosen-section">
-                <h3>🔬 Research & Publications</h3>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📚</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Machine Learning in Healthcare</div>
-                        <div class="dosen-desc">Research project - 2 PhD students</div>
-                    </div>
-                    <div class="class-indicator class-active">Active</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📖</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Journal Publication</div>
-                        <div class="dosen-desc">IEEE Paper - Under review</div>
-                    </div>
-                    <div class="class-indicator class-pending">Review</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">🎓</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Student Supervision</div>
-                        <div class="dosen-desc">5 thesis students - Various stages</div>
-                    </div>
-                    <div class="class-indicator class-active">Ongoing</div>
-                </div>
-            </div>
-
-            <div class="dosen-section">
-                <h3>👥 Student Management</h3>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📊</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Class Performance</div>
-                        <div class="dosen-desc">View student progress and analytics</div>
-                    </div>
-                    <div class="class-indicator class-active">Available</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📞</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Student Consultations</div>
-                        <div class="dosen-desc">Schedule and manage meetings</div>
-                    </div>
-                    <div class="class-indicator class-scheduled">Open</div>
-                </div>
-                <div class="dosen-item">
-                    <div class="dosen-icon">📈</div>
-                    <div class="dosen-content">
-                        <div class="dosen-title">Attendance Tracking</div>
-                        <div class="dosen-desc">Monitor student attendance</div>
-                    </div>
-                    <div class="class-indicator class-active">Updated</div>
+            <div class="assignment-body py-3">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mahasiswa</th>
+                                <th>Institusi</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentApplications ?? [] as $application)
+                            <tr>
+                                <td>{{ $application->submittedBy->name ?? 'N/A' }}</td>
+                                <td>{{ $application->institution_name ?? 'N/A' }}</td>
+                                <td>
+                                    <span class="badge
+                                        @if($application->status == 'approved') text-bg-success
+                                        @elseif($application->status == 'submitted') text-bg-warning
+                                        @else text-bg-danger @endif">
+                                        {{ ucfirst($application->status ?? 'unknown') }}
+                                    </span>
+                                </td>
+                                <td>{{ $application->created_at->format('d M Y') }}</td>
+                                <td>
+                                    <a href="{{ route('dosen.applications.show', $application->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Lihat
+                                    </a>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Belum ada aplikasi</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</body>
 
-</html>
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card-modern">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-book"></i></div>
+                    <h3 class="section-title">Kelola Aplikasi</h3>
+                </div>
+                <div class="list-modern">
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-eye"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Review Aplikasi</div>
+                            <div class="item-desc">Periksa dan setujui aplikasi mahasiswa</div>
+                        </div>
+                        <a href="{{ route('dosen.applications') }}" class="btn btn-sm btn-primary">Lihat</a>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Riwayat Persetujuan</div>
+                            <div class="item-desc">Lihat aplikasi yang sudah disetujui</div>
+                        </div>
+                        <a href="{{ route('dosen.approvals') }}" class="btn btn-sm btn-success">Lihat</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card-modern">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-cog"></i></div>
+                    <h3 class="section-title">Pengaturan</h3>
+                </div>
+                <div class="list-modern">
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-user"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Profil Dosen</div>
+                            <div class="item-desc">Kelola informasi pribadi Anda</div>
+                        </div>
+                        <a href="{{ route('dosen.settings') }}" class="btn btn-sm btn-info">Edit</a>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-bell"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Notifikasi</div>
+                            <div class="item-desc">Atur preferensi notifikasi</div>
+                        </div>
+                        <a href="{{ route('dosen.settings') }}" class="btn btn-sm btn-secondary">Atur</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card-modern">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3 class="section-title">Statistik</h3>
+                </div>
+                <div class="list-modern">
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-calendar-week"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Aktivitas Minggu Ini</div>
+                            <div class="item-desc">{{ $weeklyActivity ?? 0 }} aplikasi diproses</div>
+                        </div>
+                        <span class="badge bg-primary">{{ $weeklyActivity ?? 0 }}</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-icon"><i class="fas fa-clock"></i></div>
+                        <div class="item-content">
+                            <div class="item-title">Rata-rata Response</div>
+                            <div class="item-desc">{{ $avgResponseTime ?? '2 hari' }} waktu response</div>
+                        </div>
+                        <span class="badge bg-success">{{ $avgResponseTime ?? '2 hari' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection

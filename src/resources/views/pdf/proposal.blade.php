@@ -11,7 +11,7 @@
             font-size: 12px;
             line-height: 1.5;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             color: #333;
         }
 
@@ -19,13 +19,13 @@
             text-align: center;
             font-size: 14px;
             font-weight: bold;
-            margin: 10px 0 10px 0;
+            margin: 0;
             text-decoration: underline;
         }
 
-        .content-section {
-            margin-bottom: 20px;
-        }
+        /* .content-section {
+            margin-bottom: 10px;
+        } */
 
         .section-title {
             font-weight: bold;
@@ -36,7 +36,8 @@
         .content-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            /* margin-bottom: 20px; */
+
         }
 
         .content-table td {
@@ -52,7 +53,7 @@
         }
 
         .members-section {
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         .members-table {
@@ -98,11 +99,12 @@
         .signature-name {
             font-weight: bold;
             margin-top: 5px;
+            font-size: 16px;
         }
 
         .separator {
             border-top: 2px solid #333;
-            margin: 18px 0;
+            margin: 10px 0;
         }
 
         .date-info {
@@ -119,6 +121,13 @@
                 margin: 0;
                 padding: 15mm;
             }
+        }
+
+        .logo-section {
+            border: 1px solid #000;
+            padding: 5px 10px;
+            width: 200px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -241,9 +250,9 @@
                 <div style="height: 40px;"></div>
             @endif
             <div class="signature-line"></div>
-            <div class="signature-name">{{ $approverName ?? $application->submittedBy->name }}</div>
-            <div>NRP:
-                {{ $approverNip ?? ($application->members->where('role', 'leader')->first()->student->nrp ?? 'N/A') }}
+            <div class="signature-name">{{ $approverName ?? 'Dosen Pembimbing Belum Ditentukan' }}</div>
+            <div>NIP:
+                {{ $approverNip ?? 'N/A' }}
             </div>
         </div>
     </div>

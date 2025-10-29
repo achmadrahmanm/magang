@@ -19,7 +19,7 @@ class ApplicationSeeder extends Seeder
     {
         // Get some students for creating applications
         $students = Student::with('user')->get();
-        
+
         if ($students->count() < 3) {
             $this->command->error('Need at least 3 students to create sample applications. Run StudentSeeder first.');
             return;
@@ -35,7 +35,6 @@ class ApplicationSeeder extends Seeder
                 'planned_start_date' => '2025-02-01',
                 'planned_end_date' => '2025-07-31',
                 'notes' => 'Program magang untuk pengembangan aplikasi mobile dan web.',
-                'lecturer_nip' => '1234567890',
                 'status' => 'submitted',
                 'members' => [
                     ['student_index' => 0, 'role' => 'leader'],
@@ -50,7 +49,6 @@ class ApplicationSeeder extends Seeder
                 'planned_start_date' => '2025-03-01',
                 'planned_end_date' => '2025-08-31',
                 'notes' => 'Program magang fokus pada keamanan sistem perbankan.',
-                'lecturer_nip' => '1234567890',
                 'status' => 'reviewing',
                 'members' => [
                     ['student_index' => 2, 'role' => 'leader'],
@@ -64,7 +62,6 @@ class ApplicationSeeder extends Seeder
                 'planned_start_date' => '2025-01-15',
                 'planned_end_date' => '2025-06-15',
                 'notes' => 'Program magang untuk pengembangan microservices dan API.',
-                'lecturer_nip' => '1234567890',
                 'status' => 'approved',
                 'members' => [
                     ['student_index' => 3, 'role' => 'leader'],
@@ -79,7 +76,6 @@ class ApplicationSeeder extends Seeder
                 'planned_start_date' => '2025-02-15',
                 'planned_end_date' => '2025-07-15',
                 'notes' => 'Program magang untuk analisis data dan machine learning.',
-                'lecturer_nip' => '1234567890',
                 'status' => 'rejected',
                 'rejection_reason' => 'Kuota untuk divisi Data Science sudah penuh.',
                 'members' => [
@@ -98,7 +94,6 @@ class ApplicationSeeder extends Seeder
                 'planned_start_date' => $appData['planned_start_date'],
                 'planned_end_date' => $appData['planned_end_date'],
                 'notes' => $appData['notes'],
-                'lecturer_nip' => $appData['lecturer_nip'],
                 'status' => $appData['status'],
                 'rejection_reason' => $appData['rejection_reason'] ?? null,
                 'submitted_by' => $students[$appData['members'][0]['student_index']]->user_id,
@@ -147,7 +142,7 @@ class ApplicationSeeder extends Seeder
      */
     private function getDocumentName(string $type, int $index): string
     {
-        return match($type) {
+        return match ($type) {
             'purpose_letter' => "Surat_Permohonan_Magang_{$index}.pdf",
             'cv' => "CV_Mahasiswa_{$index}.pdf",
             'transcript' => "Transkrip_Nilai_{$index}.pdf",
@@ -160,7 +155,7 @@ class ApplicationSeeder extends Seeder
      */
     private function getDocumentDescription(string $type): string
     {
-        return match($type) {
+        return match ($type) {
             'purpose_letter' => 'Surat permohonan magang resmi dari kampus',
             'cv' => 'Curriculum Vitae mahasiswa yang berisi riwayat pendidikan dan pengalaman',
             'transcript' => 'Transkrip nilai akademik terbaru',

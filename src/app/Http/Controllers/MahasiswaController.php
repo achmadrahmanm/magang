@@ -70,7 +70,6 @@ class MahasiswaController extends Controller
                 'division' => $draft->division ?: '',
                 'start_date' => $draft->planned_start_date ? $draft->planned_start_date->format('Y-m-d') : '',
                 'duration' => $draft->planned_start_date && $draft->planned_end_date ? $draft->planned_start_date->diffInMonths($draft->planned_end_date) : '',
-                'lecturer_nip' => $draft->lecturer_nip ?: '',
                 'members' => [],
                 'has_proposal_file' => false,
                 'proposal_file_name' => '',
@@ -180,11 +179,6 @@ class MahasiswaController extends Controller
                 'start_date' => 'required|date|after:today',
                 'duration' => 'required|integer|min:1|max:12',
                 'proposal_file' => 'required|file|mimes:pdf|max:10240', // 10MB max
-                'lecturer_nip' => 'required|string|max:20',
-                'lecturer_name' => 'required|string|max:255',
-                'lecturer_email' => 'required|email|max:255',
-                'lecturer_prodi' => 'required|string|max:255',
-                'lecturer_fakultas' => 'required|string|max:255',
                 'members' => 'required|array|min:1|max:4',
                 'members.*.student_id' => 'required|string|max:20',
                 'members.*.name' => 'required|string|max:255',
@@ -219,7 +213,6 @@ class MahasiswaController extends Controller
                 'planned_start_date' => $request->start_date,
                 'planned_end_date' => $endDate,
                 'notes' => $request->topic,
-                'lecturer_nip' => $request->lecturer_nip,
                 'status' => 'submitted',
                 'submitted_by' => Auth::id(),
             ]);
@@ -363,7 +356,6 @@ class MahasiswaController extends Controller
                     'planned_start_date' => $request->start_date ?: $existingDraft->planned_start_date,
                     'planned_end_date' => $endDate ?: $existingDraft->planned_end_date,
                     'notes' => $request->topic ?: $existingDraft->notes,
-                    'lecturer_nip' => $request->lecturer_nip ?: $existingDraft->lecturer_nip,
                 ]);
 
                 $application = $existingDraft;
@@ -378,7 +370,6 @@ class MahasiswaController extends Controller
                     'planned_start_date' => $request->start_date ?: now()->addMonth(),
                     'planned_end_date' => $endDate ?: now()->addMonths(6),
                     'notes' => $request->topic ?: 'Draft proposal',
-                    'lecturer_nip' => $request->lecturer_nip ?: '',
                     'status' => 'draft',
                     'submitted_by' => Auth::id(),
                 ]); // Add current user as leader
@@ -416,13 +407,15 @@ class MahasiswaController extends Controller
                         ]);
                     }
 
-                    ApplicationMember::create([
-                        'application_id' => $application->id,
-                        'student_id' => $student->id,
-                        'role' => 'member',
-                        'notes' => 'Draft - Anggota tim magang',
-                        'joined_at' => now(),
-                    ]);
+                    if (!$application->members()->where('student_id', $student->id)->exists()) {
+                        ApplicationMember::create([
+                            'application_id' => $application->id,
+                            'student_id' => $student->id,
+                            'role' => 'member',
+                            'notes' => 'Draft - Anggota tim magang',
+                            'joined_at' => now(),
+                        ]);
+                    }
                 }
             }
 
@@ -532,11 +525,6 @@ class MahasiswaController extends Controller
                 'division' => 'nullable|string|max:255',
                 'start_date' => 'required|date|after:today',
                 'duration' => 'required|integer|min:1|max:12',
-                'lecturer_nip' => 'required|string|max:20',
-                'lecturer_name' => 'required|string|max:255',
-                'lecturer_email' => 'required|email|max:255',
-                'lecturer_prodi' => 'required|string|max:255',
-                'lecturer_fakultas' => 'required|string|max:255',
                 'members' => 'required|array|min:1|max:4',
                 'members.*.student_id' => 'required|string|max:20',
                 'members.*.name' => 'required|string|max:255',
@@ -595,7 +583,6 @@ class MahasiswaController extends Controller
                 'planned_start_date' => $request->start_date,
                 'planned_end_date' => $endDate,
                 'notes' => $request->topic,
-                'lecturer_nip' => $request->lecturer_nip,
             ]);
 
             // Get current user's student record
@@ -657,7 +644,6 @@ class MahasiswaController extends Controller
                 'user_id' => Auth::id(),
                 'company' => $request->company,
                 'members_count' => count($request->members),
-                'lecturer_nip' => $request->lecturer_nip,
             ]);
 
             return response()->json([
@@ -725,19 +711,6 @@ class MahasiswaController extends Controller
 
                 // Get lecturer information if lecturer_nip exists
                 $lecturer = null;
-                if ($application->lecturer_nip) {
-                    $lecturerData = Lecturer::where('nip', $application->lecturer_nip)->first();
-                    if ($lecturerData) {
-                        $lecturer = [
-                            'nip' => $lecturerData->nip,
-                            'nama_resmi' => $lecturerData->nama_resmi,
-                            'email_kampus' => $lecturerData->email_kampus,
-                            'prodi' => $lecturerData->prodi,
-                            'fakultas' => $lecturerData->fakultas,
-                            'jabatan' => $lecturerData->jabatan,
-                        ];
-                    }
-                }
 
                 return [
                     'id' => $application->id,
@@ -754,7 +727,6 @@ class MahasiswaController extends Controller
                     'start_date' => $application->planned_start_date->format('Y-m-d'),
                     'end_date' => $application->planned_end_date->format('Y-m-d'),
                     'duration' => $application->getDurationInDays(),
-                    'lecturer_nip' => $application->lecturer_nip,
                     'lecturer' => $lecturer,
                     'members' => $members,
                     'documents' => $documents,
@@ -825,11 +797,11 @@ class MahasiswaController extends Controller
             $userCanAccess =
                 $application->submitted_by === Auth::id() ||
                 $application
-                    ->members()
-                    ->whereHas('student', function ($q) {
-                        $q->where('user_id', Auth::id());
-                    })
-                    ->exists();
+                ->members()
+                ->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->exists();
 
             if (!$userCanAccess) {
                 return response()->json(
@@ -846,24 +818,8 @@ class MahasiswaController extends Controller
             $approverName = null;
             $approverNip = null;
 
-            if ($application->lecturer_nip) {
-                $lecturer = Lecturer::where('nip', $application->lecturer_nip)->with('user')->first();
-                if ($lecturer) {
-                    $approverName = $lecturer->nama_resmi ?? ($lecturer->name ?? null);
-                    $approverNip = $lecturer->nip ?? null;
-                    if (isset($lecturer->user) && $lecturer->user) {
-                        $approverSignature = $lecturer->user->activeSignature ?? null;
-                    }
-                }
-            }
-
-            if (!$approverSignature) {
-                // Fallback to the submitting user signature (if any)
-                $approverSignature = $application->submittedBy->activeSignature ?? Auth::user()->activeSignature ?? null;
-                $approverName = $approverName ?? ($application->submittedBy->name ?? Auth::user()->name ?? null);
-                // If no lecturer NIP, use leader's NRP as identifier
-                $approverNip = $approverNip ?? ($application->members->where('role', 'leader')->first()->student->nrp ?? null);
-            }
+            // Lecturer data is now empty as per requirements
+            // No lecturer lookup needed
 
             // Generate PDF
             $pdf = Pdf::loadView('pdf.proposal', [
@@ -914,11 +870,11 @@ class MahasiswaController extends Controller
             $userCanAccess =
                 $application->submitted_by === Auth::id() ||
                 $application
-                    ->members()
-                    ->whereHas('student', function ($q) {
-                        $q->where('user_id', Auth::id());
-                    })
-                    ->exists();
+                ->members()
+                ->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke proposal ini');
@@ -930,23 +886,8 @@ class MahasiswaController extends Controller
             $approverName = null;
             $approverNip = null;
 
-            if ($application->lecturer_nip) {
-                $lecturer = Lecturer::where('nip', $application->lecturer_nip)->with('user')->first();
-                if ($lecturer) {
-                    $approverName = $lecturer->nama_resmi ?? ($lecturer->name ?? null);
-                    $approverNip = $lecturer->nip ?? null;
-                    if (isset($lecturer->user) && $lecturer->user) {
-                        $approverSignature = $lecturer->user->activeSignature ?? null;
-                    }
-                }
-            }
-
-            if (!$approverSignature) {
-                // Fallback to the submitting user signature (if any)
-                $approverSignature = $application->submittedBy->activeSignature ?? Auth::user()->activeSignature ?? null;
-                $approverName = $approverName ?? ($application->submittedBy->name ?? Auth::user()->name ?? null);
-                $approverNip = $approverNip ?? ($application->members->where('role', 'leader')->first()->student->nrp ?? null);
-            }
+            // Lecturer data is now empty as per requirements
+            // No lecturer lookup needed
 
             // Generate PDF
             $pdf = Pdf::loadView('pdf.proposal', [
@@ -991,11 +932,11 @@ class MahasiswaController extends Controller
             $userCanAccess =
                 $application->submitted_by === Auth::id() ||
                 $application
-                    ->members()
-                    ->whereHas('student', function ($q) {
-                        $q->where('user_id', Auth::id());
-                    })
-                    ->exists();
+                ->members()
+                ->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
@@ -1041,11 +982,11 @@ class MahasiswaController extends Controller
             $userCanAccess =
                 $application->submitted_by === Auth::id() ||
                 $application
-                    ->members()
-                    ->whereHas('student', function ($q) {
-                        $q->where('user_id', Auth::id());
-                    })
-                    ->exists();
+                ->members()
+                ->whereHas('student', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->exists();
 
             if (!$userCanAccess) {
                 abort(403, 'Anda tidak memiliki akses ke aplikasi ini');
