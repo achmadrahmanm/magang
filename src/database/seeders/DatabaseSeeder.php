@@ -20,6 +20,11 @@ class DatabaseSeeder extends Seeder
             BusinessFieldSeeder::class,
             StudentSeeder::class,
             ApplicationSeeder::class,
+            CompanySeeder::class,
+            CompanyContactSeeder::class,
+            CompanyMouSeeder::class,
+            CompanyTagSeeder::class,
+            CompanyRatingSeeder::class,
         ]);
     }
 }

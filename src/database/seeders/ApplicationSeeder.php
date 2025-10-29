@@ -25,12 +25,16 @@ class ApplicationSeeder extends Seeder
             return;
         }
 
+        // Get companies for linking applications
+        $companies = \DB::table('companies')->get();
+
         // Create sample applications
         $applicationsData = [
             [
-                'institution_name' => 'PT Telkom Indonesia',
-                'institution_address' => 'Jl. Japati No. 1, Bandung, Jawa Barat 40133',
-                'business_field' => 'Teknologi Informasi dan Komunikasi',
+                'company_id' => $companies->where('name', 'PT Teknologi Maju')->first()?->id ?? null,
+                'institution_name' => 'PT Teknologi Maju',
+                'institution_address' => 'Jl. Sudirman No. 123, Jakarta',
+                'business_field' => 'Technology',
                 'placement_division' => 'Software Development',
                 'planned_start_date' => '2025-02-01',
                 'planned_end_date' => '2025-07-31',
@@ -42,26 +46,28 @@ class ApplicationSeeder extends Seeder
                 ]
             ],
             [
-                'institution_name' => 'PT Bank Central Asia Tbk',
-                'institution_address' => 'Menara BCA, Jl. M.H. Thamrin No. 1, Jakarta Pusat 10310',
-                'business_field' => 'Perbankan dan Keuangan',
-                'placement_division' => 'IT Security',
+                'company_id' => $companies->where('name', 'CV Kreatif Design')->first()?->id ?? null,
+                'institution_name' => 'CV Kreatif Design',
+                'institution_address' => 'Jl. Malioboro No. 45, Yogyakarta',
+                'business_field' => 'Design',
+                'placement_division' => 'Graphic Design',
                 'planned_start_date' => '2025-03-01',
                 'planned_end_date' => '2025-08-31',
-                'notes' => 'Program magang fokus pada keamanan sistem perbankan.',
+                'notes' => 'Program magang fokus pada desain kreatif dan UI/UX.',
                 'status' => 'reviewing',
                 'members' => [
                     ['student_index' => 2, 'role' => 'leader'],
                 ]
             ],
             [
-                'institution_name' => 'PT Gojek Indonesia',
-                'institution_address' => 'Pasaraya Blok M, Jl. Iskandarsyah II No. 2, Jakarta Selatan',
-                'business_field' => 'Teknologi Transportation & Logistics',
-                'placement_division' => 'Backend Engineering',
+                'company_id' => $companies->where('name', 'PT Finansial Aman')->first()?->id ?? null,
+                'institution_name' => 'PT Finansial Aman',
+                'institution_address' => 'Jl. Thamrin No. 67, Jakarta',
+                'business_field' => 'Finance',
+                'placement_division' => 'Accounting',
                 'planned_start_date' => '2025-01-15',
                 'planned_end_date' => '2025-06-15',
-                'notes' => 'Program magang untuk pengembangan microservices dan API.',
+                'notes' => 'Program magang untuk pengembangan sistem keuangan.',
                 'status' => 'approved',
                 'members' => [
                     ['student_index' => 3, 'role' => 'leader'],
@@ -69,6 +75,7 @@ class ApplicationSeeder extends Seeder
                 ]
             ],
             [
+                'company_id' => null, // No matching company
                 'institution_name' => 'PT Shopee International Indonesia',
                 'institution_address' => 'Wisma 77 Tower 2, Jl. S. Parman Kav. 77, Jakarta Barat',
                 'business_field' => 'E-commerce',
@@ -87,6 +94,7 @@ class ApplicationSeeder extends Seeder
         foreach ($applicationsData as $index => $appData) {
             // Create application
             $application = Application::create([
+                'company_id' => $appData['company_id'],
                 'institution_name' => $appData['institution_name'],
                 'institution_address' => $appData['institution_address'],
                 'business_field' => $appData['business_field'],
